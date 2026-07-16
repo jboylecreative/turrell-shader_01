@@ -1,0 +1,21 @@
+{
+  "name": "beverage-strata-shader-prototype",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Browser-based shader-authoring prototype for a 1920x1080 LED beverage installation. Portable to TouchDesigner.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/three": "^0.185.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.5",
+    "vite-plugin-glsl": "^1.3.1"
+  },
+  "dependencies": {
+    "three": "^0.171.0"
+  }
+}
