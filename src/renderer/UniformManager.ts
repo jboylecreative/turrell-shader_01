@@ -14,7 +14,12 @@
 import * as THREE from "three";
 import { allParameters } from "../config/parameterDefinitions";
 import { getByPath } from "../app/AppState";
-import type { PresetState } from "../app/types";
+import { BEVERAGE_IDS, MAX_STRATA_PLUS_EXIT, type PresetState } from "../app/types";
+import type { RuntimeStratum } from "../app/HistoryManager";
+import { hexToLinear } from "./ColorUtils";
+
+const N = MAX_STRATA_PLUS_EXIT; // fixed shader array size (21)
+const NBEV = BEVERAGE_IDS.length; // 5
 
 export interface UniformEntry {
   value: unknown;
@@ -33,6 +38,21 @@ export class UniformManager {
     this.uniforms.uResolution = { value: new THREE.Vector2(1920, 1080) };
     this.uniforms.uAspect = { value: 1920 / 1080 };
     this.uniforms.uStrataTexture = { value: null };
+
+    // Fixed-size strata arrays (parallel to the OrderStratum model).
+    this.uniforms.uStrataCount = { value: 0 };
+    this.uniforms.uStrataType = { value: new Int32Array(N) };
+    this.uniforms.uStrataSeed = { value: new Float32Array(N) };
+    this.uniforms.uStrataAge = { value: new Float32Array(N) };
+    this.uniforms.uStrataTop = { value: new Float32Array(N) };
+    this.uniforms.uStrataBottom = { value: new Float32Array(N) };
+    this.uniforms.uStrataActivation = { value: new Float32Array(N) };
+
+    // Per-beverage colour palettes (linear), indexed by beverage id order.
+    this.uniforms.uBevPrimary = { value: makeVec3Array(NBEV) };
+    this.uniforms.uBevSecondary = { value: makeVec3Array(NBEV) };
+    this.uniforms.uBevHighlight = { value: makeVec3Array(NBEV) };
+    this.uniforms.uBevShadow = { value: makeVec3Array(NBEV) };
 
     // Generic scalar/bool bindings from the parameter table.
     for (const p of allParameters()) {
@@ -55,6 +75,43 @@ export class UniformManager {
     }
   }
 
+  /** Push per-beverage palette colours (hex sRGB → linear) into uniforms. */
+  syncBeverageColors(state: PresetState): void {
+    const prim = this.uniforms.uBevPrimary.value as THREE.Vector3[];
+    const sec = this.uniforms.uBevSecondary.value as THREE.Vector3[];
+    const hi = this.uniforms.uBevHighlight.value as THREE.Vector3[];
+    const sh = this.uniforms.uBevShadow.value as THREE.Vector3[];
+    BEVERAGE_IDS.forEach((id, i) => {
+      const c = state.beverages[id].colors;
+      prim[i].fromArray(hexToLinear(c.primary));
+      sec[i].fromArray(hexToLinear(c.secondary));
+      hi[i].fromArray(hexToLinear(c.highlight));
+      sh[i].fromArray(hexToLinear(c.shadow));
+    });
+  }
+
+  /** Fill the fixed-size strata arrays from the live history model. */
+  setStrata(strata: RuntimeStratum[], realTime: number): void {
+    const type = this.uniforms.uStrataType.value as Int32Array;
+    const seed = this.uniforms.uStrataSeed.value as Float32Array;
+    const age = this.uniforms.uStrataAge.value as Float32Array;
+    const top = this.uniforms.uStrataTop.value as Float32Array;
+    const bottom = this.uniforms.uStrataBottom.value as Float32Array;
+    const activation = this.uniforms.uStrataActivation.value as Float32Array;
+
+    const count = Math.min(strata.length, N);
+    for (let i = 0; i < count; i++) {
+      const s = strata[i];
+      type[i] = BEVERAGE_IDS.indexOf(s.beverageId);
+      seed[i] = s.seed;
+      age[i] = realTime - s.createdAt;
+      top[i] = s.currentTop;
+      bottom[i] = s.currentBottom;
+      activation[i] = 0; // Phase 5 fills the activation envelope.
+    }
+    this.uniforms.uStrataCount.value = count;
+  }
+
   setTime(t: number): void {
     this.uniforms.uTime.value = t;
   }
@@ -67,4 +124,8 @@ export class UniformManager {
   setStrataTexture(tex: THREE.Texture | null): void {
     this.uniforms.uStrataTexture.value = tex;
   }
+}
+
+function makeVec3Array(n: number): THREE.Vector3[] {
+  return Array.from({ length: n }, () => new THREE.Vector3());
 }

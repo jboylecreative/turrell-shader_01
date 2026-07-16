@@ -14,7 +14,9 @@ import { UniformManager } from "./UniformManager";
 import type { PresetState } from "../app/types";
 
 export type ShaderErrorHandler = (message: string) => void;
-export type FrameCallback = (time: number, dt: number) => void;
+/** Called each frame with REAL (unscaled) time — for structural motion and
+ * queue timing. The time-scaled animation clock is the uTime uniform. */
+export type FrameCallback = (realTime: number, realDt: number) => void;
 
 export class Renderer {
   readonly uniforms = new UniformManager();
@@ -27,6 +29,7 @@ export class Renderer {
   private rafId = 0;
   private lastReal = 0;
   private animTime = 0; // scaled, accumulated animation clock (seconds)
+  private realTime = 0; // unscaled wall clock (seconds), for structural motion
 
   private frameCallback: FrameCallback | null = null;
   private internalW = 0;
@@ -110,6 +113,11 @@ export class Renderer {
     return this.animTime;
   }
 
+  /** Unscaled wall-clock seconds since start (matches FrameCallback's realTime). */
+  get realTimeNow(): number {
+    return this.realTime;
+  }
+
   get frameRate(): number {
     return this.fps;
   }
@@ -148,6 +156,7 @@ export class Renderer {
     const now = performance.now();
     const dtReal = Math.min((now - this.lastReal) / 1000, 0.1); // clamp hitches
     this.lastReal = now;
+    this.realTime += dtReal;
 
     const state = this.getState();
     const frozen = state.global.pause || state.debug.freezeTime;
@@ -167,7 +176,9 @@ export class Renderer {
     this.uniforms.sync(state);
     this.uniforms.setTime(this.animTime);
 
-    if (this.frameCallback) this.frameCallback(this.animTime, dt);
+    // Structural motion (strata lifecycle, queue) runs on REAL time so it is
+    // independent of the visual time-scale. Pause/freeze also halts it (dt→0).
+    if (this.frameCallback) this.frameCallback(this.realTime, frozen ? 0 : dtReal);
 
     this.strataPass.render(this.renderer);
     this.interactionPass.render(this.renderer);
@@ -217,11 +228,12 @@ export class Renderer {
 
 /** A single clip-space triangle that covers the whole screen (-1..3).
  * The attribute MUST be named "position": Three.js derives the draw vertex count
- * from geometry.attributes.position, so any other name renders nothing. */
+ * from geometry.attributes.position, so any other name renders nothing. It is
+ * 3-component (z = 0) so Three's bounding-sphere math stays finite. */
 function createFullscreenTriangle(): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
-  const positions = new Float32Array([-1, -1, 3, -1, -1, 3]);
-  g.setAttribute("position", new THREE.BufferAttribute(positions, 2));
+  const positions = new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]);
+  g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   return g;
 }
 

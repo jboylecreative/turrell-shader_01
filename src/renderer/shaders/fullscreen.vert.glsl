@@ -14,10 +14,10 @@ precision highp float;
 // The attribute is named `position` because Three.js derives the draw vertex
 // count from geometry.attributes.position. In a TouchDesigner GLSL TOP this
 // vertex stage is not needed at all.
-in vec2 position;
+in vec3 position;
 out vec2 vUv;
 
 void main() {
-  vUv = position * 0.5 + 0.5;
-  gl_Position = vec4(position, 0.0, 1.0);
+  vUv = position.xy * 0.5 + 0.5;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
 }

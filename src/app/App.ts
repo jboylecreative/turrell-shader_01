@@ -19,6 +19,8 @@ import { createDefaultPreset } from "../config/defaults";
 import { Renderer } from "../renderer/Renderer";
 import { ControlPanel } from "../ui/ControlPanel";
 import { buildDebugOverlay, type DebugOverlay } from "../ui/DebugControls";
+import { HistoryManager } from "./HistoryManager";
+import { EventQueue } from "./EventQueue";
 import type { BeverageId } from "./types";
 
 export class App {
@@ -31,9 +33,9 @@ export class App {
   private errorBanner: HTMLElement;
 
   private currentPresetName = "";
-
-  // Phase 1 stub queue status (replaced by EventQueue in Phase 2).
-  private stubQueue = 0;
+  private history!: HistoryManager;
+  private queue!: EventQueue;
+  private lastStatus = "";
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -67,14 +69,24 @@ export class App {
     this.overlay = buildDebugOverlay(this.state);
     this.stageOverlay.append(this.overlay.root);
 
+    // Strata history + event queue (real time comes from the renderer clock).
+    this.history = new HistoryManager(() => this.state.raw);
+    this.queue = new EventQueue(
+      () => this.state.raw,
+      (id, t) => this.history.addOrder(id, t),
+    );
+    // Seed an initial history so the screen starts populated.
+    this.history.generateRandom(this.state.raw.randomSeed, 0);
+
     this.panel = new ControlPanel(this.panelMount, this.state, {
       trigger: {
         trigger: (id) => this.triggerBeverage(id),
-        undo: () => this.setStatusStub(Math.max(0, this.stubQueue - 1)),
-        skip: () => this.setStatusStub(Math.max(0, this.stubQueue - 1)),
-        clearQueue: () => this.setStatusStub(0),
-        clearHistory: () => this.setStatusStub(0),
-        generateRandomHistory: () => this.setStatusStub(this.stubQueue),
+        undo: () => this.undoTrigger(),
+        skip: () => this.queue.skip(this.renderer.realTimeNow),
+        clearQueue: () => this.queue.clear(),
+        clearHistory: () => this.history.clear(this.renderer.realTimeNow),
+        generateRandomHistory: () =>
+          this.history.generateRandom(this.state.raw.randomSeed, this.renderer.realTimeNow),
       },
       preset: {
         list: () => this.presets.names(),
@@ -107,14 +119,23 @@ export class App {
       if (e.key === "f" && !isTyping(e.target)) this.renderer.toggleFullscreen();
     });
 
-    // Per-frame overlay update.
-    this.renderer.setFrameCallback(() => {
+    // Per-frame: advance queue + strata lifecycle, push data to the shader,
+    // update the overlay and status. Runs on REAL (unscaled) time.
+    this.renderer.setFrameCallback((realTime, dt) => {
+      this.queue.update(realTime);
+      this.history.update(realTime, dt);
+
+      const u = this.renderer.uniforms;
+      u.syncBeverageColors(this.state.raw);
+      u.setStrata(this.history.strata, realTime);
+
       const res = this.renderer.renderResolution;
       this.overlay.update({
         fps: this.renderer.frameRate,
         width: res.width,
         height: res.height,
       });
+      this.updateStatus();
     });
 
     this.renderer.start();
@@ -123,21 +144,28 @@ export class App {
     }
   }
 
-  // ---- Trigger (Phase 1 stub) ----------------------------------------------
+  // ---- Trigger / queue ------------------------------------------------------
 
   private triggerBeverage(id: BeverageId): void {
-    // Phase 2 will enqueue a real order. For now, prove the wiring.
-    this.stubQueue++;
-    this.panel.updateStatus({
-      queueLength: this.stubQueue,
-      activeLabel: this.state.raw.beverages[id].label,
-    });
-    console.info(`[stub] triggered ${id}`);
+    this.queue.enqueue(id, this.renderer.realTimeNow);
   }
 
-  private setStatusStub(n: number): void {
-    this.stubQueue = n;
-    this.panel.updateStatus({ queueLength: n, activeLabel: null });
+  private undoTrigger(): void {
+    // Prefer removing a not-yet-active queued press; else exit the newest order.
+    if (!this.queue.undoPending()) {
+      this.history.removeNewest(this.renderer.realTimeNow);
+    }
+  }
+
+  private updateStatus(): void {
+    const status = {
+      queueLength: this.queue.length,
+      activeLabel: this.queue.activeLabel,
+    };
+    const key = `${status.queueLength}|${status.activeLabel ?? ""}`;
+    if (key === this.lastStatus) return;
+    this.lastStatus = key;
+    this.panel.updateStatus(status);
   }
 
   // ---- Presets --------------------------------------------------------------

@@ -157,7 +157,7 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
     id: "strata",
     title: "Strata Layout",
     params: [
-      { jsonPath: "history.visibleCount", label: "Visible History Count", type: "int", min: 1, max: 20, uniform: "uStrataCount", td: "CHOP VisibleCount", description: "Number of visible strata." },
+      { jsonPath: "history.visibleCount", label: "Visible History Count", type: "int", min: 1, max: 20, uniform: "", td: "CHOP VisibleCount", description: "Number of visible strata (drives the History manager; the shader receives the live count as uStrataCount)." },
       { jsonPath: "history.initialCount", label: "Initial History Count", type: "int", min: 0, max: 20, uniform: "", td: "Par InitialCount", description: "Strata generated on load." },
       { jsonPath: "history.randomizeInitialCount", label: "Randomize Initial Count", type: "bool", uniform: "", td: "Par RandomizeInitial", description: "Randomize the initial history length." },
       { jsonPath: "strataLayout.heightVariation", label: "Stratum Height Variation", type: "float", min: 0, max: 1, uniform: "uHeightVariation", td: "CHOP HeightVariation", description: "Per-order variation in stratum height." },
