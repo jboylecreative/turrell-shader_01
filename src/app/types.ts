@@ -62,7 +62,6 @@ export interface GlobalSettings {
   saturation: number;
   contrast: number;
   backgroundLuminance: number;
-  gradientSoftness: number;
   motionAmount: number;
   horizontalDrift: number;
   driftTurbulence: number;
@@ -82,7 +81,6 @@ export interface StrataLayoutSettings {
   entryDuration: number;
   exitDuration: number;
   shiftDuration: number;
-  easing: number; // 0 = linear .. 1 = strong ease
   overshoot: number;
   settlingDamping: number;
   boundarySoftness: number;

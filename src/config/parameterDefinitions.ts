@@ -30,6 +30,9 @@ export interface ParameterDef {
   td?: string;
   description: string;
   options?: { value: string; label: string }[];
+  /** Not wired to anything yet (feature for a later phase); hidden from the UI
+   *  but kept in the schema/state so it returns automatically when built. */
+  future?: boolean;
 }
 
 export interface ControlSection {
@@ -37,6 +40,8 @@ export interface ControlSection {
   title: string;
   /** Sections start collapsed unless flagged open. */
   open?: boolean;
+  /** Whole section is for a not-yet-built phase; hidden from the UI. */
+  future?: boolean;
   params: ParameterDef[];
 }
 
@@ -54,6 +59,7 @@ interface BevParamTemplate {
   uniformSuffix: string; // appended after u{Bev}
   td: string;
   description: string;
+  future?: boolean;
 }
 
 // Per-beverage params map to un-prefixed uniform arrays indexed by beverage id
@@ -90,12 +96,13 @@ const BEV_STYLE_TEMPLATES: BevParamTemplate[] = [
   { key: "style.verticalBias", label: "Vertical Bias", type: "float", min: 0, max: 1, uniformSuffix: "VerticalBias", td: "CHOP {Bev}VerticalBias", description: "Bias of structure toward vertical flow." },
 ];
 
+// Active group is consumed by the Phase 5 cascade — hidden until then.
 const BEV_ACTIVE_TEMPLATES: BevParamTemplate[] = [
-  { key: "active.durationMultiplier", label: "Active Duration ×", type: "float", min: 0.25, max: 3, uniformSuffix: "ActiveDuration", td: "CHOP {Bev}ActiveDuration", description: "Multiplier on the shared active-cascade duration." },
-  { key: "active.brightness", label: "Active Brightness", type: "float", min: 0, max: 1.5, uniformSuffix: "ActiveBrightness", td: "CHOP {Bev}ActiveBrightness", description: "Peak brightness during activation." },
-  { key: "active.displacement", label: "Active Displacement", type: "float", min: 0, max: 1, uniformSuffix: "ActiveDisplacement", td: "CHOP {Bev}ActiveDisplacement", description: "Displacement strength during activation." },
-  { key: "active.spread", label: "Active Spread", type: "float", min: 0, max: 1, uniformSuffix: "ActiveSpread", td: "CHOP {Bev}ActiveSpread", description: "How far the active effect spreads into neighbours." },
-  { key: "active.settlingSpeed", label: "Settling Speed", type: "float", min: 0.1, max: 2, uniformSuffix: "SettlingSpeed", td: "CHOP {Bev}SettlingSpeed", description: "How quickly the beverage settles back to rest." },
+  { key: "active.durationMultiplier", label: "Active Duration ×", type: "float", min: 0.25, max: 3, uniformSuffix: "ActiveDuration", td: "CHOP {Bev}ActiveDuration", description: "Multiplier on the shared active-cascade duration.", future: true },
+  { key: "active.brightness", label: "Active Brightness", type: "float", min: 0, max: 1.5, uniformSuffix: "ActiveBrightness", td: "CHOP {Bev}ActiveBrightness", description: "Peak brightness during activation.", future: true },
+  { key: "active.displacement", label: "Active Displacement", type: "float", min: 0, max: 1, uniformSuffix: "ActiveDisplacement", td: "CHOP {Bev}ActiveDisplacement", description: "Displacement strength during activation.", future: true },
+  { key: "active.spread", label: "Active Spread", type: "float", min: 0, max: 1, uniformSuffix: "ActiveSpread", td: "CHOP {Bev}ActiveSpread", description: "How far the active effect spreads into neighbours.", future: true },
+  { key: "active.settlingSpeed", label: "Settling Speed", type: "float", min: 0.1, max: 2, uniformSuffix: "SettlingSpeed", td: "CHOP {Bev}SettlingSpeed", description: "How quickly the beverage settles back to rest.", future: true },
 ];
 
 function capitalise(id: BeverageId): string {
@@ -116,6 +123,7 @@ function expandBeverageParams(id: BeverageId, templates: BevParamTemplate[]): Pa
     uniform: `u${t.uniformSuffix}`,
     td: t.td.replace("{Bev}", Bev),
     description: t.description,
+    future: t.future,
   }));
 }
 
@@ -146,15 +154,14 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
       { jsonPath: "global.saturation", label: "Saturation", type: "float", min: 0, max: 2, uniform: "uSaturation", td: "CHOP Saturation", description: "Final saturation." },
       { jsonPath: "global.contrast", label: "Contrast", type: "float", min: 0.5, max: 2, uniform: "uContrast", td: "CHOP Contrast", description: "Final contrast." },
       { jsonPath: "global.backgroundLuminance", label: "Background Luminance", type: "float", min: 0, max: 0.3, uniform: "uBackgroundLuminance", td: "CHOP BackgroundLuminance", description: "Luminance of the empty background." },
-      { jsonPath: "global.gradientSoftness", label: "Gradient Softness", type: "float", min: 0, max: 1, uniform: "uGradientSoftness", td: "CHOP GradientSoftness", description: "Global softness of gradients." },
       { jsonPath: "global.motionAmount", label: "Global Motion Amount", type: "float", min: 0, max: 2, uniform: "uMotionAmount", td: "CHOP MotionAmount", description: "Global scale on all motion." },
-      { jsonPath: "global.horizontalDrift", label: "Horizontal Drift", type: "float", min: 0, max: 3, uniform: "uHorizontalDrift", td: "CHOP HorizontalDrift", description: "Speed of the shared left-to-right drift of internal texture." },
+      { jsonPath: "global.horizontalDrift", label: "Horizontal Drift", type: "float", min: 0, max: 3, uniform: "uHorizontalDrift", td: "CHOP HorizontalDrift", description: "Speed of the shared left-to-right liquid flow." },
       { jsonPath: "global.driftTurbulence", label: "Drift Turbulence", type: "float", min: 0, max: 1.5, uniform: "uDriftTurbulence", td: "CHOP DriftTurbulence", description: "How much the drifting texture churns/swirls vs. slides flat." },
-      { jsonPath: "global.sharedFlowScale", label: "Shared Flow Scale", type: "float", min: 0.2, max: 5, uniform: "uSharedFlowScale", td: "CHOP SharedFlowScale", description: "Spatial scale of the shared flow field." },
-      { jsonPath: "global.sharedFlowSpeed", label: "Shared Flow Speed", type: "float", min: 0, max: 2, uniform: "uSharedFlowSpeed", td: "CHOP SharedFlowSpeed", description: "Rate of the shared flow field." },
-      { jsonPath: "global.sharedDisplacement", label: "Shared Displacement", type: "float", min: 0, max: 0.3, uniform: "uSharedDisplacement", td: "CHOP SharedDisplacement", description: "Pass-2 whole-image displacement amount." },
+      { jsonPath: "global.sharedFlowScale", label: "Shared Flow Scale", type: "float", min: 0.2, max: 5, uniform: "uSharedFlowScale", td: "CHOP SharedFlowScale", description: "Spatial scale of the shared flow field.", future: true },
+      { jsonPath: "global.sharedFlowSpeed", label: "Shared Flow Speed", type: "float", min: 0, max: 2, uniform: "uSharedFlowSpeed", td: "CHOP SharedFlowSpeed", description: "Rate of the shared flow field.", future: true },
+      { jsonPath: "global.sharedDisplacement", label: "Shared Displacement", type: "float", min: 0, max: 0.3, uniform: "uSharedDisplacement", td: "CHOP SharedDisplacement", description: "Pass-2 whole-image displacement amount.", future: true },
       { jsonPath: "global.grainAmount", label: "Grain Amount", type: "float", min: 0, max: 0.3, uniform: "uGrainAmount", td: "CHOP GrainAmount", description: "Fine output grain." },
-      { jsonPath: "global.bloomAmount", label: "Bloom Amount", type: "float", min: 0, max: 1, uniform: "uBloomAmount", td: "CHOP BloomAmount", description: "Luminous bloom/spread amount." },
+      { jsonPath: "global.bloomAmount", label: "Bloom Amount", type: "float", min: 0, max: 1, uniform: "uBloomAmount", td: "CHOP BloomAmount", description: "Luminous bloom/spread amount.", future: true },
       { jsonPath: "global.previewQuality", label: "Preview Quality", type: "float", min: 0.25, max: 1, step: 0.05, uniform: "", td: "Res TOP scale", description: "Render-scale for preview; does not change coordinates." },
       { jsonPath: "global.pause", label: "Pause Animation", type: "bool", uniform: "uPaused", td: "CHOP Paused", description: "Freeze all animation." },
     ],
@@ -172,7 +179,6 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
       { jsonPath: "strataLayout.entryDuration", label: "Entry Duration", type: "float", min: 0.1, max: 6, uniform: "", td: "Par EntryDuration", description: "Seconds for a new stratum to enter." },
       { jsonPath: "strataLayout.exitDuration", label: "Exit Duration", type: "float", min: 0.1, max: 6, uniform: "", td: "Par ExitDuration", description: "Seconds for the oldest stratum to exit." },
       { jsonPath: "strataLayout.shiftDuration", label: "Shift Duration", type: "float", min: 0.1, max: 6, uniform: "", td: "Par ShiftDuration", description: "Seconds for the stack to shift down." },
-      { jsonPath: "strataLayout.easing", label: "Movement Easing", type: "float", min: 0, max: 1, uniform: "", td: "Par Easing", description: "Easing strength for stratum motion." },
       { jsonPath: "strataLayout.overshoot", label: "Overshoot", type: "float", min: 0, max: 0.5, uniform: "", td: "Par Overshoot", description: "Spring overshoot on settling." },
       { jsonPath: "strataLayout.settlingDamping", label: "Settling Damping", type: "float", min: 0, max: 1, uniform: "", td: "Par SettlingDamping", description: "Damping of the settling motion." },
       { jsonPath: "strataLayout.boundarySoftness", label: "Boundary Softness", type: "float", min: 0, max: 0.5, uniform: "uBoundarySoftness", td: "CHOP BoundarySoftness", description: "Softness of inter-stratum boundaries." },
@@ -181,6 +187,7 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
   {
     id: "interaction",
     title: "Interaction",
+    future: true, // Phase 4 — cross-stratum interaction not built yet
     params: [
       { jsonPath: "interaction.colorBleed", label: "Color Bleed", type: "float", min: 0, max: 1, uniform: "uColorBleed", td: "CHOP ColorBleed", description: "Neighbour colour contamination amount." },
       { jsonPath: "interaction.neighborCoupling", label: "Neighbor Coupling", type: "float", min: 0, max: 1, uniform: "uNeighborCoupling", td: "CHOP NeighborCoupling", description: "How strongly strata push each other's boundaries." },
@@ -196,6 +203,7 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
   {
     id: "cascade",
     title: "Active Cascade",
+    future: true, // Phase 5 — active cascade not built yet
     params: [
       { jsonPath: "cascade.duration", label: "Duration", type: "float", min: 0.5, max: 10, uniform: "uCascadeDuration", td: "CHOP CascadeDuration", description: "Total active-state duration." },
       { jsonPath: "cascade.travelDuration", label: "Travel Duration", type: "float", min: 0.3, max: 8, uniform: "uCascadeTravel", td: "CHOP CascadeTravel", description: "Seconds for the cascade front to cross the screen." },
@@ -225,13 +233,13 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
     title: "Debugging",
     params: [
       { jsonPath: "debug.monochrome", label: "Monochrome Identity Test", type: "bool", uniform: "uDebugMonochrome", td: "Par DebugMonochrome", description: "Render structural luminance only, to verify non-chromatic identity." },
-      { jsonPath: "debug.showBoundaries", label: "Show Boundary Positions", type: "bool", uniform: "uDebugBoundaries", td: "Par DebugBoundaries", description: "Overlay stratum boundary positions." },
-      { jsonPath: "debug.showIndices", label: "Show Stratum Indices", type: "bool", uniform: "", td: "Par DebugIndices", description: "Overlay stratum index numbers." },
-      { jsonPath: "debug.showCascadeField", label: "Show Active Cascade Field", type: "bool", uniform: "uDebugCascade", td: "Par DebugCascade", description: "Visualise the cascade influence field." },
+      { jsonPath: "debug.showBoundaries", label: "Show Boundary Positions", type: "bool", uniform: "uDebugBoundaries", td: "Par DebugBoundaries", description: "Overlay stratum boundary positions.", future: true },
+      { jsonPath: "debug.showIndices", label: "Show Stratum Indices", type: "bool", uniform: "", td: "Par DebugIndices", description: "Overlay stratum index numbers.", future: true },
+      { jsonPath: "debug.showCascadeField", label: "Show Active Cascade Field", type: "bool", uniform: "uDebugCascade", td: "Par DebugCascade", description: "Visualise the cascade influence field.", future: true },
       { jsonPath: "debug.showFrameRate", label: "Show Frame Rate", type: "bool", uniform: "", td: "Par DebugFPS", description: "Show the frame-rate readout." },
       { jsonPath: "debug.showRenderResolution", label: "Show Render Resolution", type: "bool", uniform: "", td: "Par DebugRes", description: "Show the current render resolution." },
       { jsonPath: "debug.freezeTime", label: "Freeze Time", type: "bool", uniform: "", td: "Par FreezeTime", description: "Freeze the animation clock." },
-      { jsonPath: "debug.displaySeeds", label: "Display Seed Values", type: "bool", uniform: "", td: "Par DisplaySeeds", description: "Show per-order seed values." },
+      { jsonPath: "debug.displaySeeds", label: "Display Seed Values", type: "bool", uniform: "", td: "Par DisplaySeeds", description: "Show per-order seed values.", future: true },
     ],
   },
 ];

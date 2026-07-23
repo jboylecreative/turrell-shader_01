@@ -26,8 +26,8 @@ export function buildBeverageControls(state: AppState, sink: Widget[]): HTMLElem
   for (const section of beverageSections()) {
     const { root, body } = makeSection(section.title, false);
     for (const group of GROUP_ORDER) {
-      const params = section.params.filter((p) =>
-        p.jsonPath.includes(`.${group.key}.`),
+      const params = section.params.filter(
+        (p) => p.jsonPath.includes(`.${group.key}.`) && !p.future,
       );
       if (params.length === 0) continue;
       const groupEl = document.createElement("div");

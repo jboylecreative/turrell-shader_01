@@ -8,7 +8,8 @@ import { GLOBAL_SECTIONS, type ControlSection } from "../config/parameterDefinit
 import { makeSection } from "./section";
 import { buildControl, type Widget } from "./widgets";
 
-/** Build one collapsible section from a ControlSection, collecting widgets. */
+/** Build one collapsible section from a ControlSection, collecting widgets.
+ *  Skips params flagged `future` (not yet built). */
 export function buildParamSection(
   section: ControlSection,
   state: AppState,
@@ -16,6 +17,7 @@ export function buildParamSection(
 ): HTMLElement {
   const { root, body } = makeSection(section.title, section.open);
   for (const param of section.params) {
+    if (param.future) continue;
     const w = buildControl(param, state);
     sink.push(w);
     body.append(w.root);
@@ -23,10 +25,11 @@ export function buildParamSection(
   return root;
 }
 
-/** All global sections in order. */
+/** All global sections in order, skipping whole sections flagged `future`. */
 export function buildGlobalControls(state: AppState, sink: Widget[]): HTMLElement {
   const frag = document.createElement("div");
   for (const section of GLOBAL_SECTIONS) {
+    if (section.future) continue;
     frag.append(buildParamSection(section, state, sink));
   }
   return frag;
