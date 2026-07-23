@@ -90,6 +90,14 @@ const BEV_DEPTH_TEMPLATES: BevParamTemplate[] = [
   { key: "depth.depthTint", label: "Depth Tint", type: "float", min: 0, max: 1, uniformSuffix: "DepthTint", td: "CHOP {Bev}DepthTint", description: "How much the deep layer darkens / recedes." },
 ];
 
+// INCLUSIONS — abstract suspended elements (soft bubbles / ice facets).
+const BEV_INCLUSION_TEMPLATES: BevParamTemplate[] = [
+  { key: "inclusions.bubbles", label: "Bubbles", type: "float", min: 0, max: 1, uniformSuffix: "Bubbles", td: "CHOP {Bev}Bubbles", description: "Amount of soft, rising luminous bubbles (abstract/suggestive)." },
+  { key: "inclusions.facets", label: "Ice Facets", type: "float", min: 0, max: 1, uniformSuffix: "Facets", td: "CHOP {Bev}Facets", description: "Amount of translucent angular ice facets (abstract/suggestive)." },
+  { key: "inclusions.size", label: "Inclusion Size", type: "float", min: 0, max: 1, uniformSuffix: "IncSize", td: "CHOP {Bev}IncSize", description: "Size of bubbles / facets." },
+  { key: "inclusions.speed", label: "Inclusion Speed", type: "float", min: 0, max: 1, uniformSuffix: "IncSpeed", td: "CHOP {Bev}IncSpeed", description: "Rise / drift speed of inclusions." },
+];
+
 // MOTION — how the form moves.
 const BEV_MOTION_TEMPLATES: BevParamTemplate[] = [
   { key: "motion.speed", label: "Speed", type: "float", min: 0, max: 2, uniformSuffix: "Speed", td: "CHOP {Bev}Speed", description: "Resting animation speed." },
@@ -139,6 +147,7 @@ export function beverageSections(): ControlSection[] {
       ...expandBeverageParams(id, BEV_COLOR_TEMPLATES),
       ...expandBeverageParams(id, BEV_FORM_TEMPLATES),
       ...expandBeverageParams(id, BEV_DEPTH_TEMPLATES),
+      ...expandBeverageParams(id, BEV_INCLUSION_TEMPLATES),
       ...expandBeverageParams(id, BEV_MOTION_TEMPLATES),
       ...expandBeverageParams(id, BEV_ACTIVE_TEMPLATES),
     ],

@@ -37,6 +37,14 @@ BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float s
   col = mix(col, c.highlight, smoothstep(0.55, 1.0, bloom + relief * 0.3) * 0.6);
   col = mix(col, c.shadow, below * 0.3);
 
+  // Abstract inclusions (bubbles / ice facets) in screen space.
+  vec2 ipos = vec2(uv.x * uAspect, uv.y);
+  float incRim; float bub = bubbles(ipos, p.incBubbles, p.incSize, p.incSpeed, st, incRim);
+  float incEdge; float fac = facets(ipos, p.incFacets, p.incSize, p.incSpeed, st, incEdge);
+  col = mix(col, c.highlight, clamp(bub * 0.4 + incRim * 0.7 + incEdge * 0.55, 0.0, 1.0));
+  col = mix(col, c.secondary, fac * 0.22);
+  lum += (bub + incEdge) * 0.15;
+
   BeverageSample s;
   s.color = col;
   s.luminance = lum;

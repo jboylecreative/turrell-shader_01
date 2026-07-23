@@ -34,6 +34,14 @@ BeverageSample evaluateAmericano(vec2 uv, float ly, float bandH, float age, floa
   col = mix(col, c.highlight, smoothstep(0.72, 1.1, lum) * 0.4);
   col = mix(col, c.shadow, below * 0.35); // depths read darker/receding
 
+  // Abstract inclusions (bubbles / ice facets) in screen space.
+  vec2 ipos = vec2(uv.x * uAspect, uv.y);
+  float incRim; float bub = bubbles(ipos, p.incBubbles, p.incSize, p.incSpeed, st, incRim);
+  float incEdge; float fac = facets(ipos, p.incFacets, p.incSize, p.incSpeed, st, incEdge);
+  col = mix(col, c.highlight, clamp(bub * 0.4 + incRim * 0.7 + incEdge * 0.55, 0.0, 1.0));
+  col = mix(col, c.secondary, fac * 0.22);
+  lum += (bub + incEdge) * 0.15;
+
   BeverageSample s;
   s.color = col;
   s.luminance = lum;
