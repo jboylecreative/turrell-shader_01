@@ -22,31 +22,37 @@ BeverageSample evaluateAmericano(vec2 uv, float ly, float bandH, float age, floa
   // Aspect-corrected, centred coords so features stay round (not stretched).
   vec2 co = vec2((uv.x - 0.5) * uAspect, ly - 0.5) * (p.noiseScale * 0.7 + 1.2) + seed * 6.0;
 
-  // --- Bounded swirling domain warp (organic & fluid; never a rigid scroll) ---
-  // Two warp octaves, each animated by a slow circular phase (stays bounded).
-  vec2 ph1 = vec2(cos(t * 0.23), sin(t * 0.19)) * 0.6;
-  vec2 ph2 = vec2(sin(t * 0.15), cos(t * 0.27)) * 0.45;
-  vec2 w1 = vec2(fbm(co + ph1), fbm(co.yx + ph1 + 4.7));
-  vec2 warped = co + (w1 - 0.5) * (0.75 + turb * 0.4);
-  vec2 w2 = vec2(fbm(warped * 1.9 + ph2), fbm(warped.yx * 1.9 + ph2 + 8.1));
-  warped += (w2 - 0.5) * 0.35;
-  // Very subtle left-right lean so there's a hint of direction under the swirl.
-  warped.x -= drift * 0.18;
+  // LEFT-TO-RIGHT flow (like a slow camera/current). Clear but calm; the shared
+  // drift speed is user-tunable.
+  co.x -= drift;
+
+  // --- Swirling domain warp on top of the flow (organic, turbulent) ---
+  // Two warp octaves animated by a bounded circular phase so the churn evolves
+  // and loops fluidly without adding rigid translation. Warp kept moderate and
+  // slightly horizontally biased so it swirls without raking vertical wisps.
+  vec2 ph1 = vec2(cos(t * 0.30), sin(t * 0.26)) * 0.7;
+  vec2 ph2 = vec2(sin(t * 0.21), cos(t * 0.33)) * 0.5;
+  vec2 w1 = vec2(fbm(co + ph1), fbm(co.yx + ph1 + 4.7)) - 0.5;
+  vec2 warped = co + w1 * vec2(1.1, 0.7) * (0.9 + turb * 0.6); // horiz-biased swirl
+  vec2 w2 = vec2(fbm(warped * 2.0 + ph2), fbm(warped.yx * 2.0 + ph2 + 8.1)) - 0.5;
+  warped += w2 * vec2(0.5, 0.3) * (0.8 + turb * 0.5);
 
   float near = fbm(warped);
   float far = fbm(warped * 0.5 + 3.0);
   float depth = near - far;                          // volumetric relief
 
-  // Gravity: compressed vertical gradient + a soft, slowly descending dark well.
-  float wellY = 0.62 + 0.16 * (far - 0.5) + 0.05 * sin(t * 0.2);
-  float well = 1.0 - smoothstep(0.0, 0.55, abs(ly - wellY));
-  float grav = pow(clamp(ly, 0.0, 1.0), 1.3);
+  // Atmospheric gradient: lighter amber toward the top (light from above)
+  // sinking into dark depths below (ly=1 is screen-top). Soft, so the warp does
+  // not carve vertical wisps at any shoreline.
+  float grav = smoothstep(-0.1, 1.2, ly);
+  float wellY = 0.5 + 0.14 * (far - 0.5) + 0.05 * sin(t * 0.2);
+  float well = 1.0 - smoothstep(0.0, 0.6, abs(ly - wellY));
 
-  float lum = mix(0.30, 0.88, grav);
-  lum -= well * 0.28;
-  lum += depth * (0.5 + p.internalContrast * 0.4);   // lit ridges / shadowed recesses
-  lum += (near - 0.5) * p.noiseStrength * 0.35;
-  lum = clamp(lum * (0.6 + p.luminance * 0.6), 0.0, 1.3);
+  float lum = mix(0.16, 0.6, grav);
+  lum -= well * 0.14;                                 // soft descending recess
+  lum += depth * (0.65 + p.internalContrast * 0.4);  // lit ridges / shadowed recesses
+  lum += (near - 0.5) * p.noiseStrength * 0.3;
+  lum = clamp(lum * (0.74 + p.luminance * 0.5), 0.0, 1.3);
 
   vec3 col = mix(c.shadow, c.primary, clamp(lum, 0.0, 1.0));
   col = mix(col, c.secondary, well * 0.28);

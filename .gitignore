@@ -10,3 +10,6 @@ npm-debug.log*
 
 # Local verification scripts (puppeteer drivers)
 _*.mjs
+
+# Ad-hoc screenshots dropped in the project root
+/Screenshot*.png
