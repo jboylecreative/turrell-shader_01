@@ -19,15 +19,17 @@ BeverageSample evaluateColdBrew(vec2 uv, float ly, float bandH, float age, float
   vec2 pos = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
   // Subtle sideways drift + a downward current (its motion language).
   vec2 flow = vec2(-drift * p.flowStrength, st * 0.35);
-  float depth;
-  float v = formField(pos, p.form, flow, st * (0.5 + p.turbulence), depth);
+  float relief, below;
+  float v = depthField(pos, p.form, flow, st * (0.5 + p.turbulence),
+                       p.turbidity, p.parallax, p.depthTint, relief, below);
 
-  float lum = mix(0.2, 0.62, v) + depth * 0.4;
+  float lum = mix(0.2, 0.62, v) + relief * 0.4;
   lum = clamp(lum * (0.68 + p.luminance * 0.5), 0.0, 1.2);
 
   vec3 col = mix(c.shadow, c.primary, clamp(v, 0.0, 1.0));
-  col = mix(col, c.secondary, clamp(depth * 0.7 + 0.2, 0.0, 1.0));
+  col = mix(col, c.secondary, clamp(relief * 0.7 + 0.2, 0.0, 1.0));
   col = mix(col, c.highlight, smoothstep(0.72, 1.0, lum) * 0.45); // cool glints
+  col = mix(col, c.shadow, below * 0.45); // dark currents lurking below
 
   BeverageSample s;
   s.color = col;

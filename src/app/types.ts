@@ -137,6 +137,13 @@ export interface BeverageForm {
   luminance: number;  // overall brightness
 }
 
+/** Sense of depth beneath the surface. */
+export interface BeverageDepth {
+  turbidity: number;  // surface opacity: 1 opaque .. 0 see deep through gaps
+  parallax: number;   // how much the deep layer lags/drifts differently
+  depthTint: number;  // how much the deep layer darkens / recedes
+}
+
 /** How the form moves. */
 export interface BeverageMotion {
   speed: number;       // resting animation speed
@@ -159,6 +166,7 @@ export interface BeverageDefinition {
   label: string;
   colors: BeverageColors;
   form: BeverageForm;
+  depth: BeverageDepth;
   motion: BeverageMotion;
   active: BeverageActive;
 }

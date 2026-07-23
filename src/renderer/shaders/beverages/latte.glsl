@@ -19,19 +19,21 @@ BeverageSample evaluateLatte(vec2 uv, float ly, float bandH, float age, float se
   // Screen-proportional vertical so short bands show a slice, not a squish.
   vec2 pos = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
-  float depth;
-  float v = formField(pos, p.form, flow, st * (0.5 + p.turbulence), depth);
+  float relief, below;
+  float v = depthField(pos, p.form, flow, st * (0.5 + p.turbulence),
+                       p.turbidity, p.parallax, p.depthTint, relief, below);
 
   // Suspended luminous shelf hovering vertically.
   float shelfY = 0.45 + 0.08 * sin(st * 0.5 + seed * 6.2831);
   float shelf = smoothPulse(ly, shelfY, 0.32);
 
-  float lum = 0.7 + shelf * 0.2 + (v - 0.5) * (0.4 + p.form.definition * 0.3) + depth * 0.25;
+  float lum = 0.7 + shelf * 0.2 + (v - 0.5) * (0.4 + p.form.definition * 0.3) + relief * 0.25;
   lum = clamp(lum * (0.78 + p.luminance * 0.4), 0.0, 1.4);
 
   vec3 col = mix(c.secondary, c.highlight, smoothstep(0.45, 1.05, lum));
   col = mix(col, c.primary, (1.0 - shelf) * 0.22);
   col = mix(col, c.shadow, smoothstep(0.32, 0.0, lum) * 0.4);
+  col = mix(col, c.primary, below * 0.3); // subtle deeper cream below
 
   BeverageSample s;
   s.color = col;

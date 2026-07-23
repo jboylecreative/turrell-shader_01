@@ -81,4 +81,34 @@ float formField(vec2 pos, FormParams f, vec2 flow, float t, out float depth) {
   return clamp((near - 0.5) * (0.7 + f.definition * 1.8) + 0.5, 0.0, 1.0);
 }
 
+// Layered depth: composites a SURFACE form layer over a DEEPER layer so you catch
+// glimpses of currents lurking below an opaque surface.
+//   turbidity  surface opacity: 1 = opaque surface, 0 = see deep through gaps
+//   parallax   how much the deep layer lags/drifts differently (depth motion cue)
+//   depthTint  how much the deep layer darkens/recedes
+// Returns the composited value in ~[0,1]; writes `relief` (surface near-far) and
+// `below` (how much of this pixel is showing the depths, for optional tinting).
+float depthField(vec2 pos, FormParams f, vec2 flow, float t,
+                 float turbidity, float parallax, float depthTint,
+                 out float relief, out float below) {
+  float rs;
+  float surf = formField(pos, f, flow, t, rs);
+
+  // Deeper layer: larger scale, slower/parallax-lagged flow, offset domain.
+  FormParams fd = f;
+  fd.scale *= 0.55;
+  float rd;
+  float deep = formField(pos * 0.75 + vec2(17.3, 4.1), fd,
+                         flow * (1.0 - clamp(parallax, 0.0, 1.0) * 0.8),
+                         t * 0.6, rd);
+  deep *= (1.0 - clamp(depthTint, 0.0, 1.0) * 0.75); // recede/darken
+
+  // Surface opacity: thick surface (high surf) hides depths; thin spots reveal
+  // the deep layer. Turbidity raises the overall opacity floor.
+  float surfAlpha = clamp(mix(smoothstep(0.25, 0.72, surf), 1.0, turbidity), 0.0, 1.0);
+  below = 1.0 - surfAlpha;
+  relief = rs;
+  return mix(deep, surf, surfAlpha);
+}
+
 #endif

@@ -26,6 +26,7 @@ const BEVERAGES: BeverageMap = {
     colors: { primary: "#5A3A22", secondary: "#31200F", highlight: "#C08A4E", shadow: "#160D06" },
     // Big billowy amber masses drifting sideways.
     form: { scale: 1.1, swirl: 1.0, complexity: 0.5, ridginess: 0.2, stretch: 0.55, definition: 0.5, luminance: 0.55 },
+    depth: { turbidity: 0.6, parallax: 0.5, depthTint: 0.6 },
     motion: { speed: 0.4, flowStrength: 1.0, turbulence: 0.5, pulse: 0.1, pulseSpeed: 0.4 },
     active: { durationMultiplier: 1.0, brightness: 0.6, displacement: 0.35, spread: 0.4, settlingSpeed: 0.7 },
   },
@@ -34,6 +35,7 @@ const BEVERAGES: BeverageMap = {
     colors: { primary: "#536B3B", secondary: "#A7B77A", highlight: "#D8D8A5", shadow: "#1E2B19" },
     // Soft radial bloom, breathing and swirling.
     form: { scale: 1.4, swirl: 1.3, complexity: 0.6, ridginess: 0.15, stretch: 0.5, definition: 0.35, luminance: 0.68 },
+    depth: { turbidity: 0.5, parallax: 0.4, depthTint: 0.5 },
     motion: { speed: 0.5, flowStrength: 0.3, turbulence: 0.8, pulse: 0.5, pulseSpeed: 0.35 },
     active: { durationMultiplier: 1.15, brightness: 0.8, displacement: 0.3, spread: 0.75, settlingSpeed: 0.55 },
   },
@@ -42,6 +44,7 @@ const BEVERAGES: BeverageMap = {
     colors: { primary: "#D8C4A6", secondary: "#EFE3D0", highlight: "#FBF4E8", shadow: "#B49B78" },
     // Broad, smooth, bright horizontal veil sliding sideways.
     form: { scale: 0.8, swirl: 0.5, complexity: 0.3, ridginess: 0.05, stretch: 0.8, definition: 0.2, luminance: 0.9 },
+    depth: { turbidity: 0.8, parallax: 0.3, depthTint: 0.3 },
     motion: { speed: 0.28, flowStrength: 1.4, turbulence: 0.3, pulse: 0.15, pulseSpeed: 0.25 },
     active: { durationMultiplier: 1.2, brightness: 0.9, displacement: 0.22, spread: 0.8, settlingSpeed: 0.5 },
   },
@@ -50,6 +53,7 @@ const BEVERAGES: BeverageMap = {
     colors: { primary: "#4A2413", secondary: "#7A3C1C", highlight: "#D9863E", shadow: "#1A0C06" },
     // Small-scale, high-contrast, veined, throbbing in place.
     form: { scale: 2.2, swirl: 1.2, complexity: 0.7, ridginess: 0.6, stretch: 0.5, definition: 1.0, luminance: 0.5 },
+    depth: { turbidity: 0.75, parallax: 0.4, depthTint: 0.7 },
     motion: { speed: 0.7, flowStrength: 0.3, turbulence: 1.0, pulse: 0.6, pulseSpeed: 0.7 },
     active: { durationMultiplier: 0.8, brightness: 0.85, displacement: 0.45, spread: 0.35, settlingSpeed: 0.9 },
   },
@@ -58,6 +62,7 @@ const BEVERAGES: BeverageMap = {
     colors: { primary: "#2E2A33", secondary: "#3F3A4A", highlight: "#8A93A8", shadow: "#120F16" },
     // Vertical laminar currents descending.
     form: { scale: 1.3, swirl: 0.7, complexity: 0.5, ridginess: 0.35, stretch: 0.15, definition: 0.55, luminance: 0.45 },
+    depth: { turbidity: 0.4, parallax: 0.7, depthTint: 0.7 },
     motion: { speed: 0.25, flowStrength: 0.5, turbulence: 0.5, pulse: 0.12, pulseSpeed: 0.2 },
     active: { durationMultiplier: 1.3, brightness: 0.6, displacement: 0.4, spread: 0.45, settlingSpeed: 0.4 },
   },

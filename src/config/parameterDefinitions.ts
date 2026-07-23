@@ -82,6 +82,13 @@ const BEV_FORM_TEMPLATES: BevParamTemplate[] = [
   { key: "form.luminance", label: "Luminance", type: "float", min: 0, max: 1.5, uniformSuffix: "Luminance", td: "CHOP {Bev}Luminance", description: "Overall brightness of the field." },
 ];
 
+// DEPTH — sense of volume beneath an opaque surface.
+const BEV_DEPTH_TEMPLATES: BevParamTemplate[] = [
+  { key: "depth.turbidity", label: "Turbidity", type: "float", min: 0, max: 1, uniformSuffix: "Turbidity", td: "CHOP {Bev}Turbidity", description: "Surface opacity: high = opaque surface, low = glimpses of the depths below." },
+  { key: "depth.parallax", label: "Depth Parallax", type: "float", min: 0, max: 1, uniformSuffix: "Parallax", td: "CHOP {Bev}Parallax", description: "How much the deep layer lags/drifts differently (depth motion cue)." },
+  { key: "depth.depthTint", label: "Depth Tint", type: "float", min: 0, max: 1, uniformSuffix: "DepthTint", td: "CHOP {Bev}DepthTint", description: "How much the deep layer darkens / recedes." },
+];
+
 // MOTION — how the form moves.
 const BEV_MOTION_TEMPLATES: BevParamTemplate[] = [
   { key: "motion.speed", label: "Speed", type: "float", min: 0, max: 2, uniformSuffix: "Speed", td: "CHOP {Bev}Speed", description: "Resting animation speed." },
@@ -130,6 +137,7 @@ export function beverageSections(): ControlSection[] {
     params: [
       ...expandBeverageParams(id, BEV_COLOR_TEMPLATES),
       ...expandBeverageParams(id, BEV_FORM_TEMPLATES),
+      ...expandBeverageParams(id, BEV_DEPTH_TEMPLATES),
       ...expandBeverageParams(id, BEV_MOTION_TEMPLATES),
       ...expandBeverageParams(id, BEV_ACTIVE_TEMPLATES),
     ],
