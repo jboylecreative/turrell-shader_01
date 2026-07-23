@@ -80,6 +80,7 @@ const BEV_FORM_TEMPLATES: BevParamTemplate[] = [
   { key: "form.stretch", label: "Stretch", type: "float", min: 0, max: 1, uniformSuffix: "Stretch", td: "CHOP {Bev}Stretch", description: "0 vertical streaks .. 0.5 round .. 1 horizontal streaks." },
   { key: "form.definition", label: "Definition", type: "float", min: 0, max: 1.5, uniformSuffix: "Definition", td: "CHOP {Bev}Definition", description: "Soft mist -> hard-edged defined masses." },
   { key: "form.luminance", label: "Luminance", type: "float", min: 0, max: 1.5, uniformSuffix: "Luminance", td: "CHOP {Bev}Luminance", description: "Overall brightness of the field." },
+  { key: "form.variation", label: "Variation", type: "float", min: 0, max: 1, uniformSuffix: "Variation", td: "CHOP {Bev}Variation", description: "Per-order distinctness: 0 = repeat orders look identical, 1 = each order varies (scale/orientation/brightness) while keeping identity." },
 ];
 
 // DEPTH — sense of volume beneath an opaque surface.

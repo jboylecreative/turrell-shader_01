@@ -50,6 +50,23 @@ float ridgedFbm(vec2 p, float ridginess) {
   return s / norm;
 }
 
+// Per-order variation: bounded, seed-based jitter so repeat orders of the same
+// beverage share their identity (colour, character) but read as distinct
+// iterations. Perturbs feature scale, churn, orientation, and brightness — never
+// the palette. `rot` is a rotation (radians) to apply to the sampling coords;
+// `lumMul` a brightness multiplier.
+void applyVariation(inout FormParams f, float seed, float variation, out float rot, out float lumMul) {
+  float v = clamp(variation, 0.0, 1.0);
+  float r1 = hash21(vec2(seed, 1.3));
+  float r2 = hash21(vec2(seed, 7.7));
+  float r3 = hash21(vec2(seed, 3.1));
+  float r4 = hash21(vec2(seed, 9.2));
+  f.scale *= 1.0 + (r1 - 0.5) * v * 0.7;   // feature size
+  f.swirl *= 1.0 + (r2 - 0.5) * v * 0.6;   // churn amount
+  rot = (r3 - 0.5) * v * 1.2;              // orientation
+  lumMul = 1.0 + (r4 - 0.5) * v * 0.35;    // brightness
+}
+
 // Base form field in ~[0,1]. `pos` is centred, aspect-corrected position;
 // `flow` advects the field (liquid flow); `t` drives the bounded swirl phase.
 // Writes `depth` (near-far relief) for volumetric shading.

@@ -21,7 +21,9 @@ BeverageSample evaluateEspresso(vec2 uv, float ly, float bandH, float age, float
   float pulseVis = mix(0.4, 1.0, mix(0.5, pulseWave, p.pulse * 2.0));
 
   // Screen-proportional vertical so short bands show a slice, not a squish.
-  vec2 pc = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
+  float vrot, vlum;
+  applyVariation(p.form, seed, p.variation, vrot, vlum);
+  vec2 pc = rot2(vrot) * vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float relief, below;
   float v = depthField(pc + seed * 4.0, p.form, flow, st * (0.5 + p.turbulence),
@@ -31,7 +33,7 @@ BeverageSample evaluateEspresso(vec2 uv, float ly, float bandH, float age, float
 
   float lum = mix(0.14, 0.92, v) + relief * 0.4 + core * 0.4 * pulseVis;
   lum *= (0.7 + 0.3 * pulseVis);
-  lum = clamp(lum * (0.7 + p.luminance * 0.5), 0.0, 1.4);
+  lum = clamp(lum * (0.7 + p.luminance * 0.5) * vlum, 0.0, 1.4);
 
   vec3 col = mix(c.shadow, c.primary, clamp(v, 0.0, 1.0));
   col = mix(col, c.secondary, core * 0.5);

@@ -13,10 +13,12 @@
 
 BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb, BeverageParams p, BeverageColors c) {
   float st = uTime * p.speed;
+  float vrot, vlum;
+  applyVariation(p.form, seed, p.variation, vrot, vlum);
   p.form.swirl += turb * 0.6;
 
   // Screen-proportional vertical so short bands show a slice, not a squish.
-  vec2 pc = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
+  vec2 pc = rot2(vrot) * vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float relief, below;
   float v = depthField(pc + seed * 4.0, p.form, flow, st * (0.5 + p.turbulence),
@@ -28,7 +30,7 @@ BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float s
   float bloom = smoothstep(breatheR, 0.0, r);
 
   float lum = bloom * 0.8 + relief * 0.45 + v * 0.12 + 0.12;
-  lum = clamp(lum * (0.7 + p.luminance * 0.5), 0.0, 1.3);
+  lum = clamp(lum * (0.7 + p.luminance * 0.5) * vlum, 0.0, 1.3);
 
   vec3 col = mix(c.shadow, c.primary, clamp(lum + 0.08, 0.0, 1.0));
   col = mix(col, c.secondary, bloom * 0.5);

@@ -20,6 +20,7 @@
 struct BeverageParams {
   FormParams form;
   float luminance;
+  float variation;
   float turbidity;
   float parallax;
   float depthTint;
@@ -42,6 +43,7 @@ uniform float uRidginess[BEV_COUNT];
 uniform float uStretch[BEV_COUNT];
 uniform float uDefinition[BEV_COUNT];
 uniform float uLuminance[BEV_COUNT];
+uniform float uVariation[BEV_COUNT];
 
 // Depth.
 uniform float uTurbidity[BEV_COUNT];
@@ -71,6 +73,7 @@ BeverageParams fetchParams(int t) {
   p.form.stretch = uStretch[i];
   p.form.definition = uDefinition[i];
   p.luminance = uLuminance[i];
+  p.variation = uVariation[i];
   p.turbidity = uTurbidity[i];
   p.parallax = uParallax[i];
   p.depthTint = uDepthTint[i];

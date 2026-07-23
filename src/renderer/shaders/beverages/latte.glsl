@@ -14,10 +14,12 @@
 
 BeverageSample evaluateLatte(vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb, BeverageParams p, BeverageColors c) {
   float st = uTime * p.speed;
+  float vrot, vlum;
+  applyVariation(p.form, seed, p.variation, vrot, vlum);
   p.form.swirl += turb * 0.4;
 
   // Screen-proportional vertical so short bands show a slice, not a squish.
-  vec2 pos = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
+  vec2 pos = rot2(vrot) * vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float relief, below;
   float v = depthField(pos, p.form, flow, st * (0.5 + p.turbulence),
@@ -28,7 +30,7 @@ BeverageSample evaluateLatte(vec2 uv, float ly, float bandH, float age, float se
   float shelf = smoothPulse(ly, shelfY, 0.32);
 
   float lum = 0.7 + shelf * 0.2 + (v - 0.5) * (0.4 + p.form.definition * 0.3) + relief * 0.25;
-  lum = clamp(lum * (0.78 + p.luminance * 0.4), 0.0, 1.4);
+  lum = clamp(lum * (0.78 + p.luminance * 0.4) * vlum, 0.0, 1.4);
 
   vec3 col = mix(c.secondary, c.highlight, smoothstep(0.45, 1.05, lum));
   col = mix(col, c.primary, (1.0 - shelf) * 0.22);

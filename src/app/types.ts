@@ -135,6 +135,7 @@ export interface BeverageForm {
   stretch: number;    // 0 vertical streaks .. 0.5 round .. 1 horizontal streaks
   definition: number; // soft mist -> hard-edged masses
   luminance: number;  // overall brightness
+  variation: number;  // per-order distinctness (0 identical .. 1 quite varied)
 }
 
 /** Sense of depth beneath the surface. */
