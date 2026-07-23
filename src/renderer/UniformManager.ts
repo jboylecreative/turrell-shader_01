@@ -37,6 +37,10 @@ export class UniformManager {
   constructor() {
     // Special (non-parameter) uniforms used by the pipeline.
     this.uniforms.uTime = { value: 0 };
+    // Flow clock: advances at real rate (× motionAmount), independent of the
+    // slow global time-scale, so left-to-right liquid flow stays visible even
+    // when the internal shimmer is calm.
+    this.uniforms.uFlowTime = { value: 0 };
     this.uniforms.uResolution = { value: new THREE.Vector2(1920, 1080) };
     this.uniforms.uAspect = { value: 1920 / 1080 };
     this.uniforms.uStrataTexture = { value: null };
@@ -146,6 +150,10 @@ export class UniformManager {
 
   setTime(t: number): void {
     this.uniforms.uTime.value = t;
+  }
+
+  setFlowTime(t: number): void {
+    this.uniforms.uFlowTime.value = t;
   }
 
   setResolution(w: number, h: number): void {

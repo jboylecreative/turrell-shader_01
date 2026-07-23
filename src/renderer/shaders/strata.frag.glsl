@@ -55,8 +55,9 @@ void main() {
   float y = vUv.y;
   float soft = max(uBoundarySoftness, 0.002);
 
-  // Shared drift undercurrent (left-to-right), plus turbulence amount.
-  float drift = uTime * uHorizontalDrift;
+  // Shared left-to-right flow (on the flow clock, so it stays visible even when
+  // the global time-scale is calm), plus turbulence amount.
+  float drift = uFlowTime * uHorizontalDrift;
   float turb = uDriftTurbulence;
 
   vec3 acc = vec3(0.0);

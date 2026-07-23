@@ -11,8 +11,9 @@
 #ifndef CORE_VISUALCORE_GLSL
 #define CORE_VISUALCORE_GLSL
 
-uniform float uTime;   // time-scaled animation clock (seconds)
-uniform float uAspect; // width / height, for aspect-corrected forms
+uniform float uTime;     // time-scaled animation clock (seconds)
+uniform float uFlowTime; // flow clock: real rate, independent of time-scale
+uniform float uAspect;   // width / height, for aspect-corrected forms
 
 struct BeverageSample {
   vec3 color;         // linear colour

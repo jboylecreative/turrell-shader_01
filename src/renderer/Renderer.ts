@@ -30,6 +30,7 @@ export class Renderer {
   private lastReal = 0;
   private startPerf = 0; // performance.now() at first frame
   private animTime = 0; // scaled, accumulated animation clock (seconds)
+  private flowTime = 0; // flow clock: real rate × motionAmount, not time-scaled
   private realTime = 0; // exact unscaled wall clock (seconds), for input/structure
 
   private frameCallback: FrameCallback | null = null;
@@ -168,6 +169,8 @@ export class Renderer {
     const frozen = state.global.pause || state.debug.freezeTime;
     const dt = frozen ? 0 : dtReal * state.global.timeScale * state.global.motionAmount;
     this.animTime += dt;
+    // Flow clock: real rate, scaled only by motionAmount (not timeScale).
+    this.flowTime += frozen ? 0 : dtReal * state.global.motionAmount;
 
     // FPS (rolling ~0.5s window).
     this.fpsAccum += dtReal;
@@ -181,6 +184,7 @@ export class Renderer {
     this.applyPreviewQuality(state);
     this.uniforms.sync(state);
     this.uniforms.setTime(this.animTime);
+    this.uniforms.setFlowTime(this.flowTime);
 
     // Structural motion (strata lifecycle, queue) runs on REAL time so it is
     // independent of the visual time-scale. Pause/freeze also halts it (dt→0).

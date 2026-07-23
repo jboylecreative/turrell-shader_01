@@ -19,23 +19,23 @@
 BeverageSample evaluateAmericano(vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb, BeverageParams p, BeverageColors c) {
   float t = uTime * p.restingSpeed;
 
-  // Aspect-corrected, centred coords so features stay round (not stretched).
-  vec2 co = vec2((uv.x - 0.5) * uAspect, ly - 0.5) * (p.noiseScale * 0.7 + 1.2) + seed * 6.0;
+  // Aspect-corrected, centred coords. LOW base frequency so large bold masses
+  // dominate; fine detail comes from the fbm octaves on top.
+  vec2 co = vec2((uv.x - 0.5) * uAspect, ly - 0.5) * (p.noiseScale * 0.28 + 0.3) + seed * 6.0;
 
-  // LEFT-TO-RIGHT flow (like a slow camera/current). Clear but calm; the shared
-  // drift speed is user-tunable.
+  // LEFT-TO-RIGHT liquid flow — the dominant motion. `drift` is on the flow clock
+  // so it reads even when the global time-scale is calm.
   co.x -= drift;
 
-  // --- Swirling domain warp on top of the flow (organic, turbulent) ---
-  // Two warp octaves animated by a bounded circular phase so the churn evolves
-  // and loops fluidly without adding rigid translation. Warp kept moderate and
-  // slightly horizontally biased so it swirls without raking vertical wisps.
-  vec2 ph1 = vec2(cos(t * 0.30), sin(t * 0.26)) * 0.7;
-  vec2 ph2 = vec2(sin(t * 0.21), cos(t * 0.33)) * 0.5;
+  // --- Swirling domain warp that mostly TRAVELS WITH the flow ---
+  // Slow, small in-place phase so the swirls flow along rather than boiling in
+  // place. Horizontally biased so it swirls without raking vertical wisps.
+  vec2 ph1 = vec2(cos(t * 0.15), sin(t * 0.12)) * 0.35;
+  vec2 ph2 = vec2(sin(t * 0.10), cos(t * 0.14)) * 0.25;
   vec2 w1 = vec2(fbm(co + ph1), fbm(co.yx + ph1 + 4.7)) - 0.5;
-  vec2 warped = co + w1 * vec2(1.1, 0.7) * (0.9 + turb * 0.6); // horiz-biased swirl
-  vec2 w2 = vec2(fbm(warped * 2.0 + ph2), fbm(warped.yx * 2.0 + ph2 + 8.1)) - 0.5;
-  warped += w2 * vec2(0.5, 0.3) * (0.8 + turb * 0.5);
+  vec2 warped = co + w1 * vec2(1.15, 0.75) * (0.9 + turb * 0.7); // horiz-biased swirl
+  vec2 w2 = vec2(fbm(warped * 2.2 + ph2), fbm(warped.yx * 2.2 + ph2 + 8.1)) - 0.5;
+  warped += w2 * vec2(0.55, 0.32) * (0.6 + turb * 0.5);
 
   float near = fbm(warped);
   float far = fbm(warped * 0.5 + 3.0);
