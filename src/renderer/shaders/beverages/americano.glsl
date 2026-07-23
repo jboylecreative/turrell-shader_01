@@ -19,7 +19,10 @@ BeverageSample evaluateAmericano(vec2 uv, float ly, float bandH, float age, floa
   // Vertical coord is SCREEN-PROPORTIONAL ((ly-0.5)*bandH) so a shorter band
   // shows a horizontal slice of the same-scale field instead of a squished copy.
   vec2 pos = rot2(vrot) * vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
-  vec2 flow = vec2(-drift * p.flowStrength, 0.0);
+  // Directional drift: magnitude from Flow Strength x global Drift Speed, angle
+  // from Flow Direction. (0=right, 90=down, 180=left, 270=up.)
+  float fa = radians(p.flowAngle);
+  vec2 flow = -drift * p.flowStrength * vec2(cos(fa), sin(fa));
   float relief, below;
   float v = depthField(pos, p.form, flow, st * (0.5 + p.turbulence),
                        p.turbidity, p.parallax, p.depthTint, relief, below);

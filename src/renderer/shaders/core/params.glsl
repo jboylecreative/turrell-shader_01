@@ -31,6 +31,7 @@ struct BeverageParams {
   float incSpeed;
   float speed;
   float flowStrength;
+  float flowAngle;
   float turbulence;
   float pulse;
   float pulseSpeed;
@@ -64,6 +65,7 @@ uniform float uIncSpeed[BEV_COUNT];
 // Motion.
 uniform float uSpeed[BEV_COUNT];
 uniform float uFlowStrength[BEV_COUNT];
+uniform float uFlowAngle[BEV_COUNT];
 uniform float uTurbulence[BEV_COUNT];
 uniform float uPulse[BEV_COUNT];
 uniform float uPulseSpeed[BEV_COUNT];
@@ -94,6 +96,7 @@ BeverageParams fetchParams(int t) {
   p.incSpeed = uIncSpeed[i];
   p.speed = uSpeed[i];
   p.flowStrength = uFlowStrength[i];
+  p.flowAngle = uFlowAngle[i];
   p.turbulence = uTurbulence[i];
   p.pulse = uPulse[i];
   p.pulseSpeed = uPulseSpeed[i];

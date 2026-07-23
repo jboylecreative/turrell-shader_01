@@ -54,31 +54,41 @@ function buildSlider(param: ParameterDef, state: AppState): Widget {
 
   const isInt = param.type === "int";
   const min = param.min ?? 0;
-  const max = param.max ?? 1;
+  const max = param.max ?? 1; // default "hard stop" of the slider track
   const step = param.step ?? (isInt ? 1 : (max - min) / 200 || 0.001);
-  for (const el of [range, num]) {
-    el.min = String(min);
-    el.max = String(max);
-    el.step = String(step);
-  }
+  // The slider track keeps the default range as its normal working zone; the
+  // number field can go beyond `max` for extra headroom, and the track's max
+  // extends to fit so the thumb stays meaningful.
+  range.min = String(min);
+  range.max = String(max);
+  range.step = String(step);
+  num.min = String(min);
+  num.step = String(step);
   wrap.append(range, num);
 
   const read = () => Number(state.get(param.jsonPath));
-  const write = (v: number) => {
-    const clamped = Math.min(max, Math.max(min, isInt ? Math.round(v) : v));
-    state.set(param.jsonPath, clamped);
+  // Slider drag: clamped to the current track range.
+  const writeFromRange = (v: number) => {
+    state.set(param.jsonPath, isInt ? Math.round(v) : v);
+  };
+  // Number field: floored at min, but NOT capped at max (extend the track).
+  const writeFromNum = (v: number) => {
+    let c = Math.max(min, isInt ? Math.round(v) : v);
+    if (c > Number(range.max)) range.max = String(c);
+    state.set(param.jsonPath, c);
   };
   const refresh = () => {
     const v = read();
+    if (v > Number(range.max)) range.max = String(v); // fit extended values
     range.value = String(v);
     num.value = String(isInt ? Math.round(v) : round(v, 4));
   };
   range.addEventListener("input", () => {
-    write(Number(range.value));
+    writeFromRange(Number(range.value));
     num.value = range.value;
   });
   num.addEventListener("change", () => {
-    write(Number(num.value));
+    writeFromNum(Number(num.value));
     refresh();
   });
   refresh();

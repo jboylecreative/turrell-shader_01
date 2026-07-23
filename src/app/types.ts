@@ -155,9 +155,10 @@ export interface BeverageInclusions {
 
 /** How the form moves. */
 export interface BeverageMotion {
-  speed: number;       // resting animation speed
-  flowStrength: number;// how strongly this beverage responds to the shared flow
-  turbulence: number;  // how much it churns in place
+  speed: number;       // internal churn/animation rate (not directional)
+  flowStrength: number;// how far/fast it drifts directionally
+  flowAngle: number;   // direction of the drift, in degrees
+  turbulence: number;  // extra churn rate
   pulse: number;       // breathing pulse depth
   pulseSpeed: number;  // breathing pulse rate
 }

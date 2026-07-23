@@ -24,7 +24,10 @@ BeverageSample evaluateEspresso(vec2 uv, float ly, float bandH, float age, float
   float vrot, vlum;
   applyVariation(p.form, seed, p.variation, vrot, vlum);
   vec2 pc = rot2(vrot) * vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
-  vec2 flow = vec2(-drift * p.flowStrength, 0.0);
+  // Directional drift: magnitude from Flow Strength x global Drift Speed, angle
+  // from Flow Direction. (0=right, 90=down, 180=left, 270=up.)
+  float fa = radians(p.flowAngle);
+  vec2 flow = -drift * p.flowStrength * vec2(cos(fa), sin(fa));
   float relief, below;
   float v = depthField(pc + seed * 4.0, p.form, flow, st * (0.5 + p.turbulence),
                        p.turbidity, p.parallax, p.depthTint, relief, below);

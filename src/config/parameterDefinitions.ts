@@ -100,9 +100,10 @@ const BEV_INCLUSION_TEMPLATES: BevParamTemplate[] = [
 
 // MOTION — how the form moves.
 const BEV_MOTION_TEMPLATES: BevParamTemplate[] = [
-  { key: "motion.speed", label: "Speed", type: "float", min: 0, max: 2, uniformSuffix: "Speed", td: "CHOP {Bev}Speed", description: "Resting animation speed." },
-  { key: "motion.flowStrength", label: "Flow Strength", type: "float", min: 0, max: 2.5, uniformSuffix: "FlowStrength", td: "CHOP {Bev}FlowStrength", description: "How strongly this beverage flows with the shared left-to-right drift." },
-  { key: "motion.turbulence", label: "Turbulence", type: "float", min: 0, max: 2, uniformSuffix: "Turbulence", td: "CHOP {Bev}Turbulence", description: "How much it churns/boils in place." },
+  { key: "motion.speed", label: "Speed", type: "float", min: 0, max: 2, uniformSuffix: "Speed", td: "CHOP {Bev}Speed", description: "Internal churn/animation rate (twirls & curls). Not directional." },
+  { key: "motion.flowStrength", label: "Flow Strength", type: "float", min: 0, max: 2.5, uniformSuffix: "FlowStrength", td: "CHOP {Bev}FlowStrength", description: "How far/fast this beverage drifts directionally (x the global Drift Speed)." },
+  { key: "motion.flowAngle", label: "Flow Direction", type: "float", min: 0, max: 360, uniformSuffix: "FlowAngle", td: "CHOP {Bev}FlowAngle", description: "Direction of the drift, in degrees (0 = right, 90 = down, 180 = left, 270 = up)." },
+  { key: "motion.turbulence", label: "Turbulence", type: "float", min: 0, max: 2, uniformSuffix: "Turbulence", td: "CHOP {Bev}Turbulence", description: "Extra churn rate on top of Speed. Not directional." },
   { key: "motion.pulse", label: "Pulse", type: "float", min: 0, max: 1, uniformSuffix: "Pulse", td: "CHOP {Bev}Pulse", description: "Breathing pulse depth." },
   { key: "motion.pulseSpeed", label: "Pulse Speed", type: "float", min: 0, max: 2, uniformSuffix: "PulseSpeed", td: "CHOP {Bev}PulseSpeed", description: "Breathing pulse rate." },
 ];
@@ -168,7 +169,7 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
       { jsonPath: "global.contrast", label: "Contrast", type: "float", min: 0.5, max: 2, uniform: "uContrast", td: "CHOP Contrast", description: "Final contrast." },
       { jsonPath: "global.backgroundLuminance", label: "Background Luminance", type: "float", min: 0, max: 0.3, uniform: "uBackgroundLuminance", td: "CHOP BackgroundLuminance", description: "Luminance of the empty background." },
       { jsonPath: "global.motionAmount", label: "Global Motion Amount", type: "float", min: 0, max: 2, uniform: "uMotionAmount", td: "CHOP MotionAmount", description: "Global scale on all motion." },
-      { jsonPath: "global.horizontalDrift", label: "Horizontal Drift", type: "float", min: 0, max: 3, uniform: "uHorizontalDrift", td: "CHOP HorizontalDrift", description: "Speed of the shared left-to-right liquid flow." },
+      { jsonPath: "global.horizontalDrift", label: "Drift Speed", type: "float", min: 0, max: 3, uniform: "uHorizontalDrift", td: "CHOP HorizontalDrift", description: "Base speed of the liquid flow; each beverage sets its own Flow Direction and Flow Strength." },
       { jsonPath: "global.driftTurbulence", label: "Drift Turbulence", type: "float", min: 0, max: 1.5, uniform: "uDriftTurbulence", td: "CHOP DriftTurbulence", description: "How much the drifting texture churns/swirls vs. slides flat." },
       { jsonPath: "global.sharedFlowScale", label: "Shared Flow Scale", type: "float", min: 0.2, max: 5, uniform: "uSharedFlowScale", td: "CHOP SharedFlowScale", description: "Spatial scale of the shared flow field.", future: true },
       { jsonPath: "global.sharedFlowSpeed", label: "Shared Flow Speed", type: "float", min: 0, max: 2, uniform: "uSharedFlowSpeed", td: "CHOP SharedFlowSpeed", description: "Rate of the shared flow field.", future: true },
