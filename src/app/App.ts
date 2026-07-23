@@ -12,6 +12,7 @@ import { StorageManager } from "./StorageManager";
 import {
   PresetManager,
   fromJSON,
+  mergeOverDefaults,
   saveJSONWithPicker,
   toJSON,
 } from "./PresetManager";
@@ -42,8 +43,11 @@ export class App {
     private panelMount: HTMLElement,
     private stageOverlay: HTMLElement,
   ) {
+    // Merge any restored working state over the current defaults so a state
+    // saved under an older schema (missing/renamed groups) can never crash the
+    // app — missing fields fall back to defaults, stale fields are ignored.
     const restored = this.storage.loadWorking();
-    this.state = new AppState(restored ?? createDefaultPreset());
+    this.state = new AppState(restored ? mergeOverDefaults(restored) : createDefaultPreset());
     this.currentPresetName = this.state.raw.presetName;
     this.presets = new PresetManager(this.storage);
 
@@ -212,7 +216,7 @@ export class App {
   private loadPreset(name: string): void {
     const p = this.presets.get(name);
     if (!p) return;
-    this.state.replace(p);
+    this.state.replace(mergeOverDefaults(p)); // tolerate older-schema presets
     this.currentPresetName = name;
     this.panel.setLocked(this.presets.isLocked(name));
     this.panel.refreshAll();
