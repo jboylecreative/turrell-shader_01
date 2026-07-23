@@ -38,4 +38,15 @@ float radialFalloff(vec2 p, vec2 center, float radius) {
   return smoothstep(radius, 0.0, length(p - center));
 }
 
+// Domain-warped flow noise (fbm of fbm). Produces organic, cloudy, VOLUMETRIC
+// structure that churns fluidly as `t` advances — the basis for depth and
+// fluid motion. `warpAmt` controls how much it swirls vs. stays smooth.
+float flowFbm(vec2 p, float warpAmt, float t) {
+  vec2 q = vec2(
+    fbm(p + vec2(1.7, 9.2) + vec2(0.0, t * 0.20)),
+    fbm(p + vec2(8.3, 2.8) + vec2(-t * 0.15, 0.0))
+  );
+  return fbm(p + warpAmt * (q - 0.5) * 2.0);
+}
+
 #endif

@@ -1,8 +1,9 @@
 // -----------------------------------------------------------------------------
-// latte.glsl — cream / warm-white / sand with a BROAD HORIZONTAL VEIL and a soft
-// luminous suspended shelf. Very smooth internal movement, high diffusion, low
-// contrast, high luminance. Monochrome identity: a bright, softly banded
-// horizontal veil with a floating light shelf — the flattest, brightest field.
+// latte.glsl — cream / warm-white / sand.
+// MOTION LANGUAGE: SLIDES SIDEWAYS as a smooth luminous veil (leans into the
+// shared drift) with a gently hovering light shelf.
+// DEPTH: soft domain-warped flow gives the veil internal thickness and a
+// suspended, lit shelf rather than a flat bright bar.
 // -----------------------------------------------------------------------------
 #ifndef BEV_LATTE_GLSL
 #define BEV_LATTE_GLSL
@@ -13,29 +14,36 @@
 #include "../core/fields.glsl"
 #include "../core/easing.glsl"
 
-BeverageSample evaluateLatte(vec2 uv, float ly, float bandH, float age, float seed, BeverageParams p, BeverageColors c) {
+BeverageSample evaluateLatte(vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb, BeverageParams p, BeverageColors c) {
   float t = uTime * p.restingSpeed;
+  float warp = 0.25 + turb * 0.7 + p.domainWarp * 0.3; // smoother, airy
 
-  // A suspended luminous shelf that hovers and drifts vertically.
-  float shelfY = 0.45 + 0.10 * sin(t * 0.25 + seed * 6.28);
-  float shelf = smoothPulse(ly, shelfY, 0.28 + p.edgeSoftness * 0.2);
+  // Strong horizontal advection = its motion language (veil slides sideways).
+  vec2 adv = vec2(-drift * 1.6, 0.0);
+  vec2 co = vec2(uv.x, ly) * (p.noiseScale * 0.5 + 0.8) + adv;
 
-  // Very smooth, low-frequency horizontal veil.
-  float veil = fbm(vec2(uv.x * p.noiseScale * 0.35 + t * 0.05, ly * p.patternScale * 0.7));
-  float veilLum = 0.72 + shelf * 0.22 + (veil - 0.5) * p.noiseStrength * 0.4;
+  float far = flowFbm(co * 0.5, warp, t * 0.7);
+  float near = flowFbm(co, warp, t * 0.7 + 2.0);
+  float depth = near - far;
 
-  float lum = clamp(veilLum * (0.75 + p.luminance * 0.5), 0.0, 1.35);
+  // Suspended luminous shelf hovering vertically.
+  float shelfY = 0.45 + 0.08 * sin(t * 0.25 + seed * 6.2831);
+  float shelf = smoothPulse(ly, shelfY, 0.3 + p.edgeSoftness * 0.2);
+
+  float lum = 0.72 + shelf * 0.2 + depth * (0.28 + p.internalContrast * 0.3);
+  lum += (near - 0.5) * p.noiseStrength * 0.2;
+  lum = clamp(lum * (0.75 + p.luminance * 0.5), 0.0, 1.35);
 
   vec3 col = mix(c.secondary, c.highlight, smoothstep(0.45, 1.05, lum));
-  col = mix(col, c.primary, (1.0 - shelf) * 0.25);
-  col = mix(col, c.shadow, smoothstep(0.35, 0.0, lum) * 0.4);
+  col = mix(col, c.primary, (1.0 - shelf) * 0.22);
+  col = mix(col, c.shadow, smoothstep(0.32, 0.0, lum) * 0.4);
 
   BeverageSample s;
   s.color = col;
   s.luminance = lum;
-  s.density = p.density * 0.6;   // airy
-  s.displacement = vec2(0.01 * sin(t * 0.2), 0.0) * p.restingAmplitude;
-  s.edgeInfluence = p.edgeActivity * 0.9; // increases neighbour diffusion
+  s.density = p.density * 0.6;
+  s.displacement = vec2(0.012 * sin(t * 0.2), 0.0) * p.restingAmplitude;
+  s.edgeInfluence = p.edgeActivity * 0.9;
   return s;
 }
 

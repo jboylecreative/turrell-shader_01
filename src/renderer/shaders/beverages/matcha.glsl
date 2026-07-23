@@ -1,8 +1,8 @@
 // -----------------------------------------------------------------------------
-// matcha.glsl — moss / vegetal green with a DIFFUSE RADIAL (elliptical) BLOOM,
-// soft internal eddies, slight granularity, and slow expansion/contraction.
-// Monochrome identity: a soft centred bloom with swirling eddies — clearly not
-// a gradient or a ribbon field.
+// matcha.glsl — moss / vegetal green.
+// MOTION LANGUAGE: BREATHES (expand/contract) and slowly SWIRLS (rotating eddies).
+// DEPTH: domain-warped flow layers give a soft volumetric bloom with an organic,
+// perturbed edge — not a flat disc.
 // -----------------------------------------------------------------------------
 #ifndef BEV_MATCHA_GLSL
 #define BEV_MATCHA_GLSL
@@ -12,36 +12,37 @@
 #include "../core/noise.glsl"
 #include "../core/fields.glsl"
 
-BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float seed, BeverageParams p, BeverageColors c) {
+BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb, BeverageParams p, BeverageColors c) {
   float t = uTime * p.restingSpeed;
+  float warp = 0.5 + turb * 0.9 + p.domainWarp * 0.6;
 
-  // Centre drifts gently; bloom radius breathes (slow expand/contract).
-  vec2 center = vec2(0.5 + 0.08 * sin(t * 0.3 + seed * 6.28), 0.5);
-  vec2 pc = vec2((uv.x - center.x) * 0.7, ly - center.y); // wide ellipse
+  // Centre coords, then SWIRL by a slow rotation (its motion language).
+  vec2 pc = vec2(uv.x - 0.5, ly - 0.5);
+  pc = rot2(t * 0.12) * pc;
 
-  // Soft eddies via domain warp.
-  vec2 w = domainWarp(pc * p.noiseScale + seed * 7.0, p.domainWarp * 0.5, t);
-  float r = length(pc + (w - pc) * 0.18);
+  vec2 co = pc * (p.noiseScale + 1.5) + seed * 7.0 + vec2(-drift * 0.6, 0.0);
+  float far = flowFbm(co * 0.6, warp, t);
+  float near = flowFbm(co, warp, t + 5.0);
+  float depth = near - far;
 
-  float breatheR = 0.34 + 0.10 * sin(t * 0.6 + seed * 3.14) * (0.3 + p.pulseAmount * 3.0);
+  // BREATHE: bloom radius expands/contracts; the edge is perturbed by the flow.
+  float breatheR = 0.34 + 0.12 * sin(t * 0.5 + seed * 6.2831) * (0.4 + p.pulseAmount * 3.0);
+  float r = length(pc) * (0.85 + 0.35 * near);
   float bloom = smoothstep(breatheR, 0.0, r);
 
-  float grain = (fbm(pc * p.noiseScale * 3.2 + seed * 3.0) - 0.5) * p.noiseStrength;
-
-  float lum = bloom * 0.85 + grain * 0.35 + 0.14;
-  lum += (fbm(pc * 6.0 + t * 0.1) - 0.5) * p.internalContrast * 0.2;
+  float lum = bloom * 0.8 + depth * (0.4 + p.internalContrast * 0.35) + 0.16;
   lum = clamp(lum * (0.7 + p.luminance * 0.5), 0.0, 1.3);
 
-  vec3 col = mix(c.shadow, c.primary, clamp(lum + 0.1, 0.0, 1.0));
-  col = mix(col, c.secondary, bloom * 0.55);
-  col = mix(col, c.highlight, smoothstep(0.6, 1.0, bloom) * 0.65);
+  vec3 col = mix(c.shadow, c.primary, clamp(lum + 0.08, 0.0, 1.0));
+  col = mix(col, c.secondary, bloom * 0.5);
+  col = mix(col, c.highlight, smoothstep(0.55, 1.0, bloom + depth * 0.3) * 0.6);
 
   BeverageSample s;
   s.color = col;
   s.luminance = lum;
   s.density = p.density * 0.85;
-  s.displacement = normalize(pc + 1e-4) * bloom * 0.03 * p.restingAmplitude; // outward spread
-  s.edgeInfluence = p.edgeActivity * 1.2; // matcha bleeds into neighbours
+  s.displacement = normalize(pc + 1e-4) * bloom * 0.03 * p.restingAmplitude;
+  s.edgeInfluence = p.edgeActivity * 1.2;
   return s;
 }
 

@@ -26,6 +26,8 @@ out vec4 fragColor;
 uniform vec2  uResolution;
 uniform float uBackgroundLuminance;
 uniform float uBoundarySoftness;
+uniform float uHorizontalDrift; // shared left-to-right drift speed
+uniform float uDriftTurbulence; // how much the drift churns/swirls
 
 // Fixed-size strata arrays (compile-time max, mirrors MAX_STRATA_PLUS_EXIT = 21).
 const int MAX_STRATA = 21;
@@ -39,19 +41,23 @@ uniform float uStrataBottom[MAX_STRATA];
 uniform float uStrataActivation[MAX_STRATA];
 
 // Dispatch to the correct beverage identity function.
-BeverageSample evaluateBeverage(int t, vec2 uv, float ly, float bandH, float age, float seed) {
+BeverageSample evaluateBeverage(int t, vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb) {
   BeverageParams p = fetchParams(t);
   BeverageColors c = fetchColors(t);
-  if (t == 0) return evaluateAmericano(uv, ly, bandH, age, seed, p, c);
-  if (t == 1) return evaluateMatcha(uv, ly, bandH, age, seed, p, c);
-  if (t == 2) return evaluateLatte(uv, ly, bandH, age, seed, p, c);
-  if (t == 3) return evaluateEspresso(uv, ly, bandH, age, seed, p, c);
-  return evaluateColdBrew(uv, ly, bandH, age, seed, p, c);
+  if (t == 0) return evaluateAmericano(uv, ly, bandH, age, seed, drift, turb, p, c);
+  if (t == 1) return evaluateMatcha(uv, ly, bandH, age, seed, drift, turb, p, c);
+  if (t == 2) return evaluateLatte(uv, ly, bandH, age, seed, drift, turb, p, c);
+  if (t == 3) return evaluateEspresso(uv, ly, bandH, age, seed, drift, turb, p, c);
+  return evaluateColdBrew(uv, ly, bandH, age, seed, drift, turb, p, c);
 }
 
 void main() {
   float y = vUv.y;
   float soft = max(uBoundarySoftness, 0.002);
+
+  // Shared drift undercurrent (left-to-right), plus turbulence amount.
+  float drift = uTime * uHorizontalDrift;
+  float turb = uDriftTurbulence;
 
   vec3 acc = vec3(0.0);
   float wsum = 0.0;
@@ -69,7 +75,7 @@ void main() {
 
     float ly = clamp((y - top) / bandH, 0.0, 1.0);
     BeverageSample s = evaluateBeverage(
-      uStrataType[i], vUv, ly, bandH, uStrataAge[i], uStrataSeed[i]);
+      uStrataType[i], vUv, ly, bandH, uStrataAge[i], uStrataSeed[i], drift, turb);
 
     acc += s.color * w;
     wsum += w;

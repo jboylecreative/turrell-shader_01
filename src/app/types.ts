@@ -64,6 +64,8 @@ export interface GlobalSettings {
   backgroundLuminance: number;
   gradientSoftness: number;
   motionAmount: number;
+  horizontalDrift: number;
+  driftTurbulence: number;
   sharedFlowScale: number;
   sharedFlowSpeed: number;
   sharedDisplacement: number;
