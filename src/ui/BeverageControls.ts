@@ -11,8 +11,8 @@ import { buildControl, type Widget } from "./widgets";
 
 const GROUP_ORDER: { key: string; label: string }[] = [
   { key: "colors", label: "Colors" },
-  { key: "rest", label: "Resting" },
-  { key: "style", label: "Style" },
+  { key: "form", label: "Form" },
+  { key: "motion", label: "Motion" },
   { key: "active", label: "Active" },
 ];
 

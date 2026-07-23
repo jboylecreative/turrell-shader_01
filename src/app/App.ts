@@ -147,6 +147,15 @@ export class App {
     }
   }
 
+  /** DEV-ONLY: read a state value by path for verification. */
+  debugGet(path: string): unknown {
+    try {
+      return this.state.get(path);
+    } catch {
+      return "UNREACHABLE";
+    }
+  }
+
   /** DEV-ONLY: inspect the live strata for verification. */
   debugStrata(): { count: number; states: string[]; types: string[] } {
     return {

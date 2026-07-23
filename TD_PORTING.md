@@ -53,8 +53,14 @@ Every control is declared once in `src/config/parameterDefinitions.ts` with its
 table is the single source of truth and will be exported here in full in Phase 7.
 Example rows:
 
+Per-beverage params are **arrays indexed by beverage id** in the browser (all
+five render in one shader); in TouchDesigner each beverage is its own GLSL TOP
+where the array collapses to a scalar custom parameter.
+
 | JSON path | UI label | Type | Min | Max | GLSL uniform | TD destination |
 | --- | --- | --- | --- | --- | --- | --- |
 | `global.timeScale` | Overall Time Scale | float | 0 | 1 | `uTimeScale` | CHOP `TimeScale` |
-| `beverages.matcha.rest.restingSpeed` | Resting Speed | float | 0 | 2 | `uMatchaRestingSpeed` | CHOP `MatchaRestingSpeed` |
-| `beverages.matcha.colors.primary` | Primary | color | — | — | `uMatchaColorPrimary` | Custom RGBA par `MatchaPrimary` |
+| `global.horizontalDrift` | Horizontal Drift | float | 0 | 3 | `uHorizontalDrift` | CHOP `HorizontalDrift` |
+| `beverages.matcha.form.ridginess` | Ridginess | float | 0 | 1 | `uRidginess[1]` | CHOP `MatchaRidginess` |
+| `beverages.matcha.motion.speed` | Speed | float | 0 | 2 | `uSpeed[1]` | CHOP `MatchaSpeed` |
+| `beverages.matcha.colors.primary` | Primary | color | — | — | `uBevPrimary[1]` | Custom RGBA par `MatchaPrimary` |

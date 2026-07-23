@@ -126,31 +126,27 @@ export interface BeverageColors {
   shadow: string;
 }
 
-export interface BeverageRest {
-  restingSpeed: number;
-  restingAmplitude: number;
-  patternScale: number;
-  gradientScale: number;
-  gradientDirection: number;
-  noiseScale: number;
-  noiseStrength: number;
-  domainWarp: number;
-  pulseAmount: number;
-  pulseSpeed: number;
-  luminanceDrift: number;
-  edgeActivity: number;
+/** The "nature of the form" controls — how the field is structured. */
+export interface BeverageForm {
+  scale: number;      // feature size
+  swirl: number;      // domain-warp amount
+  complexity: number; // smooth blobs -> intricate folds
+  ridginess: number;  // billowy -> veined/filamented
+  stretch: number;    // 0 vertical streaks .. 0.5 round .. 1 horizontal streaks
+  definition: number; // soft mist -> hard-edged masses
+  luminance: number;  // overall brightness
 }
 
-export interface BeverageStyle {
-  luminance: number;
-  density: number;
-  edgeSoftness: number;
-  internalContrast: number;
-  distortion: number;
-  horizontalBias: number;
-  verticalBias: number;
+/** How the form moves. */
+export interface BeverageMotion {
+  speed: number;       // resting animation speed
+  flowStrength: number;// how strongly this beverage responds to the shared flow
+  turbulence: number;  // how much it churns in place
+  pulse: number;       // breathing pulse depth
+  pulseSpeed: number;  // breathing pulse rate
 }
 
+/** Active (trigger) response — consumed by the Phase 5 cascade (kept for schema). */
 export interface BeverageActive {
   durationMultiplier: number;
   brightness: number;
@@ -162,8 +158,8 @@ export interface BeverageActive {
 export interface BeverageDefinition {
   label: string;
   colors: BeverageColors;
-  rest: BeverageRest;
-  style: BeverageStyle;
+  form: BeverageForm;
+  motion: BeverageMotion;
   active: BeverageActive;
 }
 

@@ -71,29 +71,24 @@ const BEV_COLOR_TEMPLATES: BevParamTemplate[] = [
   { key: "colors.shadow", label: "Shadow", type: "color", uniformSuffix: "BevShadow", td: "Custom RGBA par {Bev}Shadow", description: "Deep shadow colour (sRGB)." },
 ];
 
-const BEV_REST_TEMPLATES: BevParamTemplate[] = [
-  { key: "rest.restingSpeed", label: "Resting Speed", type: "float", min: 0, max: 2, uniformSuffix: "RestingSpeed", td: "CHOP {Bev}RestingSpeed", description: "Speed of the idle resting animation." },
-  { key: "rest.restingAmplitude", label: "Resting Amplitude", type: "float", min: 0, max: 1, uniformSuffix: "RestingAmplitude", td: "CHOP {Bev}RestingAmplitude", description: "Magnitude of resting motion." },
-  { key: "rest.patternScale", label: "Pattern Scale", type: "float", min: 0.2, max: 6, uniformSuffix: "PatternScale", td: "CHOP {Bev}PatternScale", description: "Scale of the internal pattern structure." },
-  { key: "rest.gradientScale", label: "Gradient Scale", type: "float", min: 0.2, max: 4, uniformSuffix: "GradientScale", td: "CHOP {Bev}GradientScale", description: "Scale of the vertical/directional gradient." },
-  { key: "rest.gradientDirection", label: "Gradient Direction", type: "float", min: 0, max: 360, uniformSuffix: "GradientDirection", td: "CHOP {Bev}GradientDirection", description: "Gradient direction in degrees." },
-  { key: "rest.noiseScale", label: "Noise Scale", type: "float", min: 0.2, max: 8, uniformSuffix: "NoiseScale", td: "CHOP {Bev}NoiseScale", description: "Spatial frequency of the noise field." },
-  { key: "rest.noiseStrength", label: "Noise Strength", type: "float", min: 0, max: 1, uniformSuffix: "NoiseStrength", td: "CHOP {Bev}NoiseStrength", description: "Contribution of noise to the field." },
-  { key: "rest.domainWarp", label: "Domain Warp", type: "float", min: 0, max: 1, uniformSuffix: "DomainWarp", td: "CHOP {Bev}DomainWarp", description: "Amount of domain-warp distortion." },
-  { key: "rest.pulseAmount", label: "Pulse Amount", type: "float", min: 0, max: 1, uniformSuffix: "PulseAmount", td: "CHOP {Bev}PulseAmount", description: "Depth of the slow breathing pulse." },
-  { key: "rest.pulseSpeed", label: "Pulse Speed", type: "float", min: 0, max: 2, uniformSuffix: "PulseSpeed", td: "CHOP {Bev}PulseSpeed", description: "Rate of the breathing pulse." },
-  { key: "rest.luminanceDrift", label: "Luminance Drift", type: "float", min: 0, max: 1, uniformSuffix: "LuminanceDrift", td: "CHOP {Bev}LuminanceDrift", description: "Slow drift of brightness over time." },
-  { key: "rest.edgeActivity", label: "Edge Activity", type: "float", min: 0, max: 1, uniformSuffix: "EdgeActivity", td: "CHOP {Bev}EdgeActivity", description: "Liveliness of the stratum boundaries." },
+// FORM — the "nature of the form" controls. Wide ranges for dramatic reshaping.
+const BEV_FORM_TEMPLATES: BevParamTemplate[] = [
+  { key: "form.scale", label: "Scale", type: "float", min: 0.2, max: 6, uniformSuffix: "Scale", td: "CHOP {Bev}Scale", description: "Feature size (higher = smaller, denser features)." },
+  { key: "form.swirl", label: "Swirl", type: "float", min: 0, max: 3, uniformSuffix: "Swirl", td: "CHOP {Bev}Swirl", description: "Domain-warp amount: gentle drift -> heavy churn." },
+  { key: "form.complexity", label: "Complexity", type: "float", min: 0, max: 1, uniformSuffix: "Complexity", td: "CHOP {Bev}Complexity", description: "Smooth blobs -> intricate multi-scale folds." },
+  { key: "form.ridginess", label: "Ridginess", type: "float", min: 0, max: 1, uniformSuffix: "Ridginess", td: "CHOP {Bev}Ridginess", description: "Billowy clouds -> sharp veins / filaments." },
+  { key: "form.stretch", label: "Stretch", type: "float", min: 0, max: 1, uniformSuffix: "Stretch", td: "CHOP {Bev}Stretch", description: "0 vertical streaks .. 0.5 round .. 1 horizontal streaks." },
+  { key: "form.definition", label: "Definition", type: "float", min: 0, max: 1.5, uniformSuffix: "Definition", td: "CHOP {Bev}Definition", description: "Soft mist -> hard-edged defined masses." },
+  { key: "form.luminance", label: "Luminance", type: "float", min: 0, max: 1.5, uniformSuffix: "Luminance", td: "CHOP {Bev}Luminance", description: "Overall brightness of the field." },
 ];
 
-const BEV_STYLE_TEMPLATES: BevParamTemplate[] = [
-  { key: "style.luminance", label: "Luminance", type: "float", min: 0, max: 1.5, uniformSuffix: "Luminance", td: "CHOP {Bev}Luminance", description: "Overall brightness of the beverage field." },
-  { key: "style.density", label: "Density", type: "float", min: 0, max: 1, uniformSuffix: "Density", td: "CHOP {Bev}Density", description: "Apparent density/opacity of the field." },
-  { key: "style.edgeSoftness", label: "Edge Softness", type: "float", min: 0, max: 1, uniformSuffix: "EdgeSoftness", td: "CHOP {Bev}EdgeSoftness", description: "Softness of the outer boundaries." },
-  { key: "style.internalContrast", label: "Internal Contrast", type: "float", min: 0, max: 1.5, uniformSuffix: "InternalContrast", td: "CHOP {Bev}InternalContrast", description: "Contrast of internal transitions." },
-  { key: "style.distortion", label: "Distortion", type: "float", min: 0, max: 1, uniformSuffix: "Distortion", td: "CHOP {Bev}Distortion", description: "Amount of spatial distortion." },
-  { key: "style.horizontalBias", label: "Horizontal Bias", type: "float", min: 0, max: 1, uniformSuffix: "HorizontalBias", td: "CHOP {Bev}HorizontalBias", description: "Bias of structure toward horizontal flow." },
-  { key: "style.verticalBias", label: "Vertical Bias", type: "float", min: 0, max: 1, uniformSuffix: "VerticalBias", td: "CHOP {Bev}VerticalBias", description: "Bias of structure toward vertical flow." },
+// MOTION — how the form moves.
+const BEV_MOTION_TEMPLATES: BevParamTemplate[] = [
+  { key: "motion.speed", label: "Speed", type: "float", min: 0, max: 2, uniformSuffix: "Speed", td: "CHOP {Bev}Speed", description: "Resting animation speed." },
+  { key: "motion.flowStrength", label: "Flow Strength", type: "float", min: 0, max: 2.5, uniformSuffix: "FlowStrength", td: "CHOP {Bev}FlowStrength", description: "How strongly this beverage flows with the shared left-to-right drift." },
+  { key: "motion.turbulence", label: "Turbulence", type: "float", min: 0, max: 2, uniformSuffix: "Turbulence", td: "CHOP {Bev}Turbulence", description: "How much it churns/boils in place." },
+  { key: "motion.pulse", label: "Pulse", type: "float", min: 0, max: 1, uniformSuffix: "Pulse", td: "CHOP {Bev}Pulse", description: "Breathing pulse depth." },
+  { key: "motion.pulseSpeed", label: "Pulse Speed", type: "float", min: 0, max: 2, uniformSuffix: "PulseSpeed", td: "CHOP {Bev}PulseSpeed", description: "Breathing pulse rate." },
 ];
 
 // Active group is consumed by the Phase 5 cascade — hidden until then.
@@ -134,8 +129,8 @@ export function beverageSections(): ControlSection[] {
     title: capitalise(id),
     params: [
       ...expandBeverageParams(id, BEV_COLOR_TEMPLATES),
-      ...expandBeverageParams(id, BEV_REST_TEMPLATES),
-      ...expandBeverageParams(id, BEV_STYLE_TEMPLATES),
+      ...expandBeverageParams(id, BEV_FORM_TEMPLATES),
+      ...expandBeverageParams(id, BEV_MOTION_TEMPLATES),
       ...expandBeverageParams(id, BEV_ACTIVE_TEMPLATES),
     ],
   }));

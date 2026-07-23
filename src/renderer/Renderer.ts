@@ -135,6 +135,8 @@ export class Renderer {
     const gl = this.renderer.getContext();
     const state = this.getState();
     this.uniforms.sync(state);
+    this.uniforms.syncBeverageColors(state);
+    this.uniforms.syncBeverageParams(state);
     this.strataPass.render(this.renderer);
     this.interactionPass.render(this.renderer);
     const screen = new Uint8Array(4);

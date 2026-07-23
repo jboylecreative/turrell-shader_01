@@ -1,36 +1,31 @@
 // -----------------------------------------------------------------------------
-// matcha.glsl — moss / vegetal green.
-// MOTION LANGUAGE: BREATHES (expand/contract) and slowly SWIRLS (rotating eddies).
-// DEPTH: domain-warped flow layers give a soft volumetric bloom with an organic,
-// perturbed edge — not a flat disc.
+// matcha.glsl — vegetal green.
+// STRUCTURE: soft radial bloom masked over the shared form field.
+// MOTION: breathes (expand/contract) and swirls in place; weak flow.
 // -----------------------------------------------------------------------------
 #ifndef BEV_MATCHA_GLSL
 #define BEV_MATCHA_GLSL
 
 #include "../core/visualCore.glsl"
 #include "../core/params.glsl"
-#include "../core/noise.glsl"
+#include "../core/form.glsl"
 #include "../core/fields.glsl"
 
 BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb, BeverageParams p, BeverageColors c) {
-  float t = uTime * p.restingSpeed;
-  float warp = 0.5 + turb * 0.9 + p.domainWarp * 0.6;
+  float st = uTime * p.speed;
+  p.form.swirl += turb * 0.6;
 
-  // Centre coords, then SWIRL by a slow rotation (its motion language).
-  vec2 pc = vec2(uv.x - 0.5, ly - 0.5);
-  pc = rot2(t * 0.12) * pc;
+  vec2 pc = vec2((uv.x - 0.5) * uAspect, ly - 0.5);
+  vec2 flow = vec2(-drift * p.flowStrength, 0.0);
+  float depth;
+  float v = formField(pc + seed * 4.0, p.form, flow, st * (0.5 + p.turbulence), depth);
 
-  vec2 co = pc * (p.noiseScale + 1.5) + seed * 7.0 + vec2(-drift * 0.6, 0.0);
-  float far = flowFbm(co * 0.6, warp, t);
-  float near = flowFbm(co, warp, t + 5.0);
-  float depth = near - far;
-
-  // BREATHE: bloom radius expands/contracts; the edge is perturbed by the flow.
-  float breatheR = 0.34 + 0.12 * sin(t * 0.5 + seed * 6.2831) * (0.4 + p.pulseAmount * 3.0);
-  float r = length(pc) * (0.85 + 0.35 * near);
+  // Breathing bloom; the form field perturbs its radius for an organic edge.
+  float breatheR = 0.36 + 0.14 * sin(st * p.pulseSpeed + seed * 6.2831) * (0.3 + p.pulse * 3.0);
+  float r = length(pc) * (0.75 + 0.5 * v);
   float bloom = smoothstep(breatheR, 0.0, r);
 
-  float lum = bloom * 0.8 + depth * (0.4 + p.internalContrast * 0.35) + 0.16;
+  float lum = bloom * 0.8 + depth * 0.45 + v * 0.12 + 0.12;
   lum = clamp(lum * (0.7 + p.luminance * 0.5), 0.0, 1.3);
 
   vec3 col = mix(c.shadow, c.primary, clamp(lum + 0.08, 0.0, 1.0));
@@ -40,9 +35,9 @@ BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float s
   BeverageSample s;
   s.color = col;
   s.luminance = lum;
-  s.density = p.density * 0.85;
-  s.displacement = normalize(pc + 1e-4) * bloom * 0.03 * p.restingAmplitude;
-  s.edgeInfluence = p.edgeActivity * 1.2;
+  s.density = 0.55;
+  s.displacement = vec2(0.0);
+  s.edgeInfluence = 1.1;
   return s;
 }
 
