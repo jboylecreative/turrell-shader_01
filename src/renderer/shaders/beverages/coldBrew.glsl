@@ -19,8 +19,9 @@ BeverageSample evaluateColdBrew(vec2 uv, float ly, float bandH, float age, float
 
   // Screen-proportional vertical so short bands show a slice, not a squish.
   vec2 pos = rot2(vrot) * vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
-  // Subtle sideways drift + a downward current (its motion language).
-  vec2 flow = vec2(-drift * p.flowStrength, st * 0.35);
+  // Sideways drift + a downward current — both are DIRECTIONAL motion, driven by
+  // the flow clock and Flow Strength (NOT Speed), so Speed stays pure churn.
+  vec2 flow = vec2(-drift * p.flowStrength, uFlowTime * p.flowStrength * 0.3);
   float relief, below;
   float v = depthField(pos, p.form, flow, st * (0.5 + p.turbulence),
                        p.turbidity, p.parallax, p.depthTint, relief, below);
