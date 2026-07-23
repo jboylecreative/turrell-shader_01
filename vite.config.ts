@@ -9,11 +9,15 @@ export default defineConfig({
     glsl({
       include: ["**/*.glsl", "**/*.vert", "**/*.frag"],
       minify: false,
+      // Shared core chunks (noise/fields/params) are #included by several
+      // beverage modules; inline each only once per shader.
+      removeDuplicatedImports: true,
       watch: true,
     }),
   ],
   server: {
-    port: 5173,
+    port: 5180,
+    strictPort: false, // if 5180 is taken, Vite picks the next free port
     open: true,
   },
   build: {

@@ -31,6 +31,8 @@ export class UniformManager {
 
   /** Parameter paths that feed a scalar/bool uniform, resolved once. */
   private scalarBindings: { path: string; uniform: string }[] = [];
+  /** Per-beverage float params grouped into arrays: uniform → 5 jsonPaths. */
+  private bevArrayBindings: { uniform: string; paths: string[] }[] = [];
 
   constructor() {
     // Special (non-parameter) uniforms used by the pipeline.
@@ -54,9 +56,26 @@ export class UniformManager {
     this.uniforms.uBevHighlight = { value: makeVec3Array(NBEV) };
     this.uniforms.uBevShadow = { value: makeVec3Array(NBEV) };
 
-    // Generic scalar/bool bindings from the parameter table.
+    // Bindings from the parameter table. Per-beverage params (jsonPath starts
+    // with "beverages.") become arrays indexed by beverage; everything else is a
+    // plain scalar/bool. Colours are handled by syncBeverageColors.
+    const bevGroups = new Map<string, string[]>();
     for (const p of allParameters()) {
       if (!p.uniform) continue;
+
+      if (p.jsonPath.startsWith("beverages.")) {
+        if (p.type !== "float" && p.type !== "int") continue; // colours: separate
+        const id = p.jsonPath.split(".")[1] as (typeof BEVERAGE_IDS)[number];
+        const idx = BEVERAGE_IDS.indexOf(id);
+        if (idx < 0) continue;
+        if (!bevGroups.has(p.uniform)) {
+          this.uniforms[p.uniform] = { value: new Float32Array(NBEV) };
+          bevGroups.set(p.uniform, new Array(NBEV).fill(""));
+        }
+        bevGroups.get(p.uniform)![idx] = p.jsonPath;
+        continue;
+      }
+
       if (p.type === "float" || p.type === "int") {
         this.uniforms[p.uniform] ??= { value: 0 };
         this.scalarBindings.push({ path: p.jsonPath, uniform: p.uniform });
@@ -64,14 +83,27 @@ export class UniformManager {
         this.uniforms[p.uniform] ??= { value: false };
         this.scalarBindings.push({ path: p.jsonPath, uniform: p.uniform });
       }
-      // 'color' handled in Phase 2+ via explicit Vector3 uniforms.
     }
+    this.bevArrayBindings = [...bevGroups.entries()].map(([uniform, paths]) => ({
+      uniform,
+      paths,
+    }));
   }
 
   /** Push all scalar/bool parameter values from state into their uniforms. */
   sync(state: PresetState): void {
     for (const b of this.scalarBindings) {
       this.uniforms[b.uniform].value = getByPath(state, b.path);
+    }
+  }
+
+  /** Push per-beverage float params into their arrays (indexed by beverage). */
+  syncBeverageParams(state: PresetState): void {
+    for (const b of this.bevArrayBindings) {
+      const arr = this.uniforms[b.uniform].value as Float32Array;
+      for (let i = 0; i < b.paths.length; i++) {
+        arr[i] = Number(getByPath(state, b.paths[i]));
+      }
     }
   }
 

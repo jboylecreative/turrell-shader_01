@@ -127,6 +127,7 @@ export class App {
 
       const u = this.renderer.uniforms;
       u.syncBeverageColors(this.state.raw);
+      u.syncBeverageParams(this.state.raw);
       u.setStrata(this.history.strata, realTime);
 
       const res = this.renderer.renderResolution;
@@ -140,8 +141,19 @@ export class App {
 
     this.renderer.start();
     if (import.meta.env.DEV) {
-      (window as unknown as { __renderer: Renderer }).__renderer = this.renderer;
+      const w = window as unknown as { __renderer: Renderer; __app: App };
+      w.__renderer = this.renderer;
+      w.__app = this;
     }
+  }
+
+  /** DEV-ONLY: inspect the live strata for verification. */
+  debugStrata(): { count: number; states: string[]; types: string[] } {
+    return {
+      count: this.history.strata.length,
+      states: this.history.strata.map((s) => s.state),
+      types: this.history.strata.map((s) => s.beverageId),
+    };
   }
 
   // ---- Trigger / queue ------------------------------------------------------

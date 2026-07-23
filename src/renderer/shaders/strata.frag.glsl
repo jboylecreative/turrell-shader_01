@@ -4,26 +4,31 @@
 //
 // Browser pass 1  →  TouchDesigner "Strata GLSL TOP".
 //
-// PHASE 2 STATUS: fills each stratum band with its beverage's PRIMARY colour,
-// using soft membership weights (not hard rectangles) so boundaries already
-// blend. This validates the rolling-stack movement before the real per-beverage
-// shader identities land in Phase 3, where each uStrataType branches into
-// evaluate<Beverage>() in /beverages. OUTPUT: LINEAR colour.
+// PHASE 3 STATUS: for every stratum, dispatches to that beverage's dedicated
+// evaluate<Beverage>() function (portable /beverages modules) and blends the
+// results with soft membership weights. Each beverage is a structurally distinct
+// field, verifiable in the monochrome debug mode. OUTPUT: LINEAR colour.
 // -----------------------------------------------------------------------------
 precision highp float;
+
+// Portable core + beverage modules (each guarded against double-include).
+#include "./core/visualCore.glsl"
+#include "./core/params.glsl"
+#include "./beverages/americano.glsl"
+#include "./beverages/matcha.glsl"
+#include "./beverages/latte.glsl"
+#include "./beverages/espresso.glsl"
+#include "./beverages/coldBrew.glsl"
 
 in vec2 vUv;
 out vec4 fragColor;
 
-uniform float uTime;
 uniform vec2  uResolution;
-uniform float uAspect;
 uniform float uBackgroundLuminance;
 uniform float uBoundarySoftness;
 
 // Fixed-size strata arrays (compile-time max, mirrors MAX_STRATA_PLUS_EXIT = 21).
 const int MAX_STRATA = 21;
-const int BEV_COUNT = 5;
 
 uniform int   uStrataCount;
 uniform int   uStrataType[MAX_STRATA];
@@ -33,14 +38,16 @@ uniform float uStrataTop[MAX_STRATA];
 uniform float uStrataBottom[MAX_STRATA];
 uniform float uStrataActivation[MAX_STRATA];
 
-uniform vec3 uBevPrimary[BEV_COUNT];
-uniform vec3 uBevSecondary[BEV_COUNT];
-uniform vec3 uBevHighlight[BEV_COUNT];
-uniform vec3 uBevShadow[BEV_COUNT];
-
-// GLSL ES 3.00 permits dynamic indexing of uniform arrays.
-vec3 bevPrimary(int t) { return uBevPrimary[clamp(t, 0, BEV_COUNT - 1)]; }
-vec3 bevShadow(int t) { return uBevShadow[clamp(t, 0, BEV_COUNT - 1)]; }
+// Dispatch to the correct beverage identity function.
+BeverageSample evaluateBeverage(int t, vec2 uv, float ly, float bandH, float age, float seed) {
+  BeverageParams p = fetchParams(t);
+  BeverageColors c = fetchColors(t);
+  if (t == 0) return evaluateAmericano(uv, ly, bandH, age, seed, p, c);
+  if (t == 1) return evaluateMatcha(uv, ly, bandH, age, seed, p, c);
+  if (t == 2) return evaluateLatte(uv, ly, bandH, age, seed, p, c);
+  if (t == 3) return evaluateEspresso(uv, ly, bandH, age, seed, p, c);
+  return evaluateColdBrew(uv, ly, bandH, age, seed, p, c);
+}
 
 void main() {
   float y = vUv.y;
@@ -53,18 +60,18 @@ void main() {
     if (i >= uStrataCount) break;
     float top = uStrataTop[i];
     float bot = uStrataBottom[i];
+    float bandH = max(bot - top, 0.001);
+
     // Soft membership: inside the band with feathered edges.
     float w = smoothstep(top - soft, top + soft, y) *
               (1.0 - smoothstep(bot - soft, bot + soft, y));
     if (w <= 0.0001) continue;
 
-    int t = uStrataType[i];
-    // A gentle vertical shade within the band (shadow → primary) so each
-    // stratum reads with depth even in this flat placeholder stage.
-    float g = clamp((y - top) / max(bot - top, 0.001), 0.0, 1.0);
-    vec3 col = mix(bevShadow(t), bevPrimary(t), 0.35 + 0.65 * g);
+    float ly = clamp((y - top) / bandH, 0.0, 1.0);
+    BeverageSample s = evaluateBeverage(
+      uStrataType[i], vUv, ly, bandH, uStrataAge[i], uStrataSeed[i]);
 
-    acc += col * w;
+    acc += s.color * w;
     wsum += w;
   }
 

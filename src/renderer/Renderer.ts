@@ -28,8 +28,9 @@ export class Renderer {
   private running = false;
   private rafId = 0;
   private lastReal = 0;
+  private startPerf = 0; // performance.now() at first frame
   private animTime = 0; // scaled, accumulated animation clock (seconds)
-  private realTime = 0; // unscaled wall clock (seconds), for structural motion
+  private realTime = 0; // exact unscaled wall clock (seconds), for input/structure
 
   private frameCallback: FrameCallback | null = null;
   private internalW = 0;
@@ -154,9 +155,14 @@ export class Renderer {
     this.rafId = requestAnimationFrame(this.loop);
 
     const now = performance.now();
-    const dtReal = Math.min((now - this.lastReal) / 1000, 0.1); // clamp hitches
+    if (this.startPerf === 0) this.startPerf = now;
+    // realTime is EXACT wall-clock (never clamped) so input timing — double-click
+    // protection, queue pacing — stays correct even when frames hitch.
+    this.realTime = (now - this.startPerf) / 1000;
+    // dtReal is clamped only for stepping animation/structure so a stall doesn't
+    // cause a visual leap.
+    const dtReal = Math.min((now - this.lastReal) / 1000, 0.1);
     this.lastReal = now;
-    this.realTime += dtReal;
 
     const state = this.getState();
     const frozen = state.global.pause || state.debug.freezeTime;

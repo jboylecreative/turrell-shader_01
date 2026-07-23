@@ -59,10 +59,16 @@ final pass (`core/color.glsl`). Never convert twice.
   control panel (sections A–H) generated from the parameter table, shader-compile
   error reporting, and a debug overlay. Pass 1 currently runs a **diagnostic
   placeholder shader**.
-- **Phase 2 (next):** rolling strata system (history, event queue, entry/shift/
-  exit lifecycle) with temporary flat per-beverage colours.
-- Phases 3–7: real beverage shader identities, soft-boundary interaction, active
-  cascade, visual refinement, optimisation + full docs.
+- **Phase 2 (done):** rolling strata system — history manager, event queue,
+  spring-driven entry/shift/exit lifecycle, deterministic seeds.
+- **Phase 3 (done):** five structurally distinct beverage shader identities in
+  `/shaders/beverages` (americano = vertical gravity well, matcha = radial bloom,
+  latte = horizontal luminous veil, espresso = concentrated high-contrast pulse,
+  cold brew = vertical ribbons), built on portable `/core` modules and per-
+  beverage array uniforms. Distinguishable in the monochrome debug mode.
+- **Phase 4 (next):** soft-boundary interaction — membership blending, shared
+  flow field, neighbour coupling, colour contamination.
+- Phases 5–7: active cascade, visual refinement, optimisation + full docs.
 
 ## Keyboard
 

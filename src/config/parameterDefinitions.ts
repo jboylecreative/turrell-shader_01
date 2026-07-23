@@ -56,11 +56,13 @@ interface BevParamTemplate {
   description: string;
 }
 
+// Per-beverage params map to un-prefixed uniform arrays indexed by beverage id
+// (e.g. uRestingSpeed[matcha]); the TD column keeps the per-beverage CHOP name.
 const BEV_COLOR_TEMPLATES: BevParamTemplate[] = [
-  { key: "colors.primary", label: "Primary", type: "color", uniformSuffix: "ColorPrimary", td: "Custom RGBA par {Bev}Primary", description: "Primary field colour (sRGB)." },
-  { key: "colors.secondary", label: "Secondary", type: "color", uniformSuffix: "ColorSecondary", td: "Custom RGBA par {Bev}Secondary", description: "Secondary field colour (sRGB)." },
-  { key: "colors.highlight", label: "Highlight", type: "color", uniformSuffix: "ColorHighlight", td: "Custom RGBA par {Bev}Highlight", description: "Luminous highlight colour (sRGB)." },
-  { key: "colors.shadow", label: "Shadow", type: "color", uniformSuffix: "ColorShadow", td: "Custom RGBA par {Bev}Shadow", description: "Deep shadow colour (sRGB)." },
+  { key: "colors.primary", label: "Primary", type: "color", uniformSuffix: "BevPrimary", td: "Custom RGBA par {Bev}Primary", description: "Primary field colour (sRGB)." },
+  { key: "colors.secondary", label: "Secondary", type: "color", uniformSuffix: "BevSecondary", td: "Custom RGBA par {Bev}Secondary", description: "Secondary field colour (sRGB)." },
+  { key: "colors.highlight", label: "Highlight", type: "color", uniformSuffix: "BevHighlight", td: "Custom RGBA par {Bev}Highlight", description: "Luminous highlight colour (sRGB)." },
+  { key: "colors.shadow", label: "Shadow", type: "color", uniformSuffix: "BevShadow", td: "Custom RGBA par {Bev}Shadow", description: "Deep shadow colour (sRGB)." },
 ];
 
 const BEV_REST_TEMPLATES: BevParamTemplate[] = [
@@ -109,7 +111,9 @@ function expandBeverageParams(id: BeverageId, templates: BevParamTemplate[]): Pa
     min: t.min,
     max: t.max,
     step: t.step,
-    uniform: t.type === "color" ? `u${Bev}${t.uniformSuffix}` : `u${Bev}${t.uniformSuffix}`,
+    // Un-prefixed uniform: an array indexed by beverage id in the browser,
+    // a scalar custom-par per beverage GLSL TOP in TouchDesigner.
+    uniform: `u${t.uniformSuffix}`,
     td: t.td.replace("{Bev}", Bev),
     description: t.description,
   }));
