@@ -15,7 +15,8 @@ BeverageSample evaluateMatcha(vec2 uv, float ly, float bandH, float age, float s
   float st = uTime * p.speed;
   p.form.swirl += turb * 0.6;
 
-  vec2 pc = vec2((uv.x - 0.5) * uAspect, ly - 0.5);
+  // Screen-proportional vertical so short bands show a slice, not a squish.
+  vec2 pc = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float depth;
   float v = formField(pc + seed * 4.0, p.form, flow, st * (0.5 + p.turbulence), depth);

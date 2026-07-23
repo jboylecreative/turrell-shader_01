@@ -15,7 +15,8 @@ BeverageSample evaluateColdBrew(vec2 uv, float ly, float bandH, float age, float
   float st = uTime * p.speed;
   p.form.swirl += turb * 0.5;
 
-  vec2 pos = vec2((uv.x - 0.5) * uAspect, ly - 0.5) + seed * 3.0;
+  // Screen-proportional vertical so short bands show a slice, not a squish.
+  vec2 pos = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
   // Subtle sideways drift + a downward current (its motion language).
   vec2 flow = vec2(-drift * p.flowStrength, st * 0.35);
   float depth;

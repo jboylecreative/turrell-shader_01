@@ -16,7 +16,8 @@ BeverageSample evaluateLatte(vec2 uv, float ly, float bandH, float age, float se
   float st = uTime * p.speed;
   p.form.swirl += turb * 0.4;
 
-  vec2 pos = vec2((uv.x - 0.5) * uAspect, ly - 0.5) + seed * 3.0;
+  // Screen-proportional vertical so short bands show a slice, not a squish.
+  vec2 pos = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float depth;
   float v = formField(pos, p.form, flow, st * (0.5 + p.turbulence), depth);

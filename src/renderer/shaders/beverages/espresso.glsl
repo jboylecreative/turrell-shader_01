@@ -20,7 +20,8 @@ BeverageSample evaluateEspresso(vec2 uv, float ly, float bandH, float age, float
   float pulseWave = 0.5 + 0.5 * sin(st * (1.0 + p.pulseSpeed * 3.0) + seed * 6.2831);
   float pulseVis = mix(0.4, 1.0, mix(0.5, pulseWave, p.pulse * 2.0));
 
-  vec2 pc = vec2((uv.x - 0.5) * uAspect, ly - 0.5);
+  // Screen-proportional vertical so short bands show a slice, not a squish.
+  vec2 pc = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH);
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float depth;
   float v = formField(pc + seed * 4.0, p.form, flow, st * (0.5 + p.turbulence), depth);

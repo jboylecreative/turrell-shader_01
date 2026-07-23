@@ -14,7 +14,9 @@ BeverageSample evaluateAmericano(vec2 uv, float ly, float bandH, float age, floa
   float st = uTime * p.speed;
   p.form.swirl += turb * 0.6; // global Drift Turbulence amplifies swirl
 
-  vec2 pos = vec2((uv.x - 0.5) * uAspect, ly - 0.5) + seed * 3.0;
+  // Vertical coord is SCREEN-PROPORTIONAL ((ly-0.5)*bandH) so a shorter band
+  // shows a horizontal slice of the same-scale field instead of a squished copy.
+  vec2 pos = vec2((uv.x - 0.5) * uAspect, (ly - 0.5) * bandH) + seed * 3.0;
   vec2 flow = vec2(-drift * p.flowStrength, 0.0);
   float depth;
   float v = formField(pos, p.form, flow, st * (0.5 + p.turbulence), depth);
