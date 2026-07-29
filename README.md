@@ -1,12 +1,7 @@
-# Turrell Strata
+# Strata Visualization
 
-A browser-based tool for authoring the animated "strata" visuals for the LED-screen
-beverage installation. Each order draws a luminous, Rothko/Turrell-inspired field
-("stratum"); the panel on the right lets you shape every beverage's look and the
-overall composition, then save/share the result as JSON.
-
-This browser app is a **portable authoring tool**, not the final platform — the GLSL
-visual core, uniform names, parameter ranges, and JSON presets are designed to move
+This is a design app intended to be a **portable authoring tool**, not the final platform — the GLSL
+visual core, uniform names, parameter ranges, and JSON presets will likely move
 into **TouchDesigner** later with minimal rewriting (see [For developers](#for-developers)).
 
 ---
