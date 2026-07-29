@@ -80,7 +80,7 @@ const BEV_FORM_TEMPLATES: BevParamTemplate[] = [
   { key: "form.stretch", label: "Stretch", type: "float", min: 0, max: 1, uniformSuffix: "Stretch", td: "CHOP {Bev}Stretch", description: "0 vertical streaks .. 0.5 round .. 1 horizontal streaks." },
   { key: "form.definition", label: "Definition", type: "float", min: 0, max: 1.5, uniformSuffix: "Definition", td: "CHOP {Bev}Definition", description: "Soft mist -> hard-edged defined masses." },
   { key: "form.luminance", label: "Luminance", type: "float", min: 0, max: 1.5, uniformSuffix: "Luminance", td: "CHOP {Bev}Luminance", description: "Overall brightness of the field." },
-  { key: "form.glow", label: "Glow", type: "float", min: 0, max: 2.5, uniformSuffix: "Glow", td: "CHOP {Bev}Glow", description: "How much this beverage's bright parts emit light (bloomed by the global Glow). Follows the structure — highlights, cores, bubble rims, ice edges glow most." },
+  { key: "form.glow", label: "Glow", type: "float", min: 0, max: 2.5, uniformSuffix: "Glow", td: "CHOP {Bev}Glow", description: "How much this beverage's bright parts emit light (bloomed by the global Glow). Follows the structure — the brightest ridges and cores glow most." },
   { key: "form.variation", label: "Variation", type: "float", min: 0, max: 1, uniformSuffix: "Variation", td: "CHOP {Bev}Variation", description: "Per-order distinctness: 0 = repeat orders look identical, 1 = each order varies (scale/orientation/brightness) while keeping identity." },
 ];
 
@@ -89,14 +89,6 @@ const BEV_DEPTH_TEMPLATES: BevParamTemplate[] = [
   { key: "depth.turbidity", label: "Turbidity", type: "float", min: 0, max: 1, uniformSuffix: "Turbidity", td: "CHOP {Bev}Turbidity", description: "Surface opacity: high = opaque surface, low = glimpses of the depths below." },
   { key: "depth.parallax", label: "Depth Parallax", type: "float", min: 0, max: 1, uniformSuffix: "Parallax", td: "CHOP {Bev}Parallax", description: "How much the deep layer lags/drifts differently (depth motion cue)." },
   { key: "depth.depthTint", label: "Depth Tint", type: "float", min: 0, max: 1, uniformSuffix: "DepthTint", td: "CHOP {Bev}DepthTint", description: "How much the deep layer darkens / recedes." },
-];
-
-// INCLUSIONS — abstract suspended elements (soft bubbles / ice facets).
-const BEV_INCLUSION_TEMPLATES: BevParamTemplate[] = [
-  { key: "inclusions.bubbles", label: "Bubbles", type: "float", min: 0, max: 1, uniformSuffix: "Bubbles", td: "CHOP {Bev}Bubbles", description: "Amount of soft, rising luminous bubbles (abstract/suggestive)." },
-  { key: "inclusions.facets", label: "Ice Facets", type: "float", min: 0, max: 1, uniformSuffix: "Facets", td: "CHOP {Bev}Facets", description: "Amount of translucent angular ice facets (abstract/suggestive)." },
-  { key: "inclusions.size", label: "Inclusion Size", type: "float", min: 0, max: 1, uniformSuffix: "IncSize", td: "CHOP {Bev}IncSize", description: "Size of bubbles / facets." },
-  { key: "inclusions.speed", label: "Inclusion Speed", type: "float", min: 0, max: 1, uniformSuffix: "IncSpeed", td: "CHOP {Bev}IncSpeed", description: "Rise / drift speed of inclusions." },
 ];
 
 // MOTION — how the form moves.
@@ -149,7 +141,6 @@ export function beverageSections(): ControlSection[] {
       ...expandBeverageParams(id, BEV_COLOR_TEMPLATES),
       ...expandBeverageParams(id, BEV_FORM_TEMPLATES),
       ...expandBeverageParams(id, BEV_DEPTH_TEMPLATES),
-      ...expandBeverageParams(id, BEV_INCLUSION_TEMPLATES),
       ...expandBeverageParams(id, BEV_MOTION_TEMPLATES),
       ...expandBeverageParams(id, BEV_ACTIVE_TEMPLATES),
     ],

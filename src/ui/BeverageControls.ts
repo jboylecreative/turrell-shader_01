@@ -13,7 +13,6 @@ const GROUP_ORDER: { key: string; label: string }[] = [
   { key: "colors", label: "Colors" },
   { key: "form", label: "Form" },
   { key: "depth", label: "Depth" },
-  { key: "inclusions", label: "Inclusions" },
   { key: "motion", label: "Motion" },
   { key: "active", label: "Active" },
 ];

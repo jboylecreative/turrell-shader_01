@@ -48,14 +48,14 @@ float snoise(vec2 v) {
 // Simplex noise remapped to [0, 1].
 float vnoise(vec2 p) { return snoise(p) * 0.5 + 0.5; }
 
-// Fractal (5-octave) simplex noise in ~[0, 1], rotating the domain each octave
+// Fractal (3-octave) simplex noise in ~[0, 1], rotating the domain each octave
 // to decorrelate scales (removes any residual directional structure).
 float fbm(vec2 p) {
   const mat2 M = mat2(0.8, -0.6, 0.6, 0.8); // ~37 degree rotation per octave
   float sum = 0.0;
   float amp = 0.5;
   float norm = 0.0;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     sum += amp * (snoise(p) * 0.5 + 0.5);
     norm += amp;
     p = M * p * 2.0;

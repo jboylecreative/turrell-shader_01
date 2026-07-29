@@ -42,7 +42,7 @@ float hash21(vec2 p) {
 // Browser bloom pass -> TouchDesigner Bloom TOP / custom GLSL TOP.
 vec3 emissionBloom(vec2 uv, float radiusUV) {
   if (uBloomAmount <= 0.0001 || radiusUV <= 0.0) return vec3(0.0);
-  const int TAPS = 24;
+  const int TAPS = 12;
   const float GA = 2.399963; // golden angle
   vec3 sum = vec3(0.0);
   float wsum = 0.0;

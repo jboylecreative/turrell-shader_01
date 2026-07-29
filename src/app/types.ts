@@ -147,14 +147,6 @@ export interface BeverageDepth {
   depthTint: number;  // how much the deep layer darkens / recedes
 }
 
-/** Abstract suspended inclusions (soft bubbles / ice facets). */
-export interface BeverageInclusions {
-  bubbles: number; // amount of soft rising light-discs
-  facets: number;  // amount of translucent ice facets
-  size: number;    // element size
-  speed: number;   // rise / drift speed
-}
-
 /** How the form moves. */
 export interface BeverageMotion {
   speed: number;       // internal churn/animation rate (not directional)
@@ -179,7 +171,6 @@ export interface BeverageDefinition {
   colors: BeverageColors;
   form: BeverageForm;
   depth: BeverageDepth;
-  inclusions: BeverageInclusions;
   motion: BeverageMotion;
   active: BeverageActive;
 }

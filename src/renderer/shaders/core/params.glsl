@@ -12,7 +12,6 @@
 #define CORE_PARAMS_GLSL
 
 #include "./form.glsl"
-#include "./inclusions.glsl"
 
 #define BEV_COUNT 5
 
@@ -26,10 +25,6 @@ struct BeverageParams {
   float turbidity;
   float parallax;
   float depthTint;
-  float incBubbles;
-  float incFacets;
-  float incSize;
-  float incSpeed;
   float speed;
   float flowStrength;
   float flowAngle;
@@ -57,12 +52,6 @@ uniform float uVariation[BEV_COUNT];
 uniform float uTurbidity[BEV_COUNT];
 uniform float uParallax[BEV_COUNT];
 uniform float uDepthTint[BEV_COUNT];
-
-// Inclusions.
-uniform float uBubbles[BEV_COUNT];
-uniform float uFacets[BEV_COUNT];
-uniform float uIncSize[BEV_COUNT];
-uniform float uIncSpeed[BEV_COUNT];
 
 // Motion.
 uniform float uSpeed[BEV_COUNT];
@@ -93,10 +82,6 @@ BeverageParams fetchParams(int t) {
   p.turbidity = uTurbidity[i];
   p.parallax = uParallax[i];
   p.depthTint = uDepthTint[i];
-  p.incBubbles = uBubbles[i];
-  p.incFacets = uFacets[i];
-  p.incSize = uIncSize[i];
-  p.incSpeed = uIncSpeed[i];
   p.speed = uSpeed[i];
   p.flowStrength = uFlowStrength[i];
   p.flowAngle = uFlowAngle[i];

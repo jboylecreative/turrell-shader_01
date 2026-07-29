@@ -37,11 +37,12 @@ float ridgedSample(vec2 p, float ridginess) {
   return mix(billow, vein, clamp(ridginess, 0.0, 1.0));
 }
 
-// Fractal ridged noise (5 octaves, rotated) in ~[0,1].
+// Fractal ridged noise (3 octaves, rotated) in ~[0,1]. Kept to 3 octaves for
+// performance — this is called many times per pixel (warp + depth layers).
 float ridgedFbm(vec2 p, float ridginess) {
   const mat2 M = mat2(0.8, -0.6, 0.6, 0.8);
   float s = 0.0, a = 0.5, norm = 0.0;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     s += a * ridgedSample(p, ridginess);
     norm += a;
     p = M * p * 2.0;
@@ -91,7 +92,7 @@ float formField(vec2 pos, FormParams f, vec2 flow, float t, out float depth) {
   }
 
   float near = ridgedFbm(warped, f.ridginess);
-  float far = ridgedFbm(warped * 0.5 + 3.0, f.ridginess);
+  float far = snoise(warped * 0.5 + 3.0) * 0.5 + 0.5; // cheap single-octave relief
   depth = near - far;
 
   // Definition: contrast around the midpoint (soft mist -> defined masses).
