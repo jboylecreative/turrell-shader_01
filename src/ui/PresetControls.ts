@@ -8,8 +8,7 @@ export interface PresetHandlers {
   list: () => string[];
   currentName: () => string;
   isLocked: (name: string) => boolean;
-  save: () => void;
-  saveAs: (name: string) => void;
+  save: (name: string) => void;
   load: (name: string) => void;
   duplicate: () => void;
   deletePreset: () => void;
@@ -49,11 +48,10 @@ export function buildPresetControls(handlers: PresetHandlers): PresetView {
   const grid = document.createElement("div");
   grid.className = "preset-grid";
   grid.append(
-    btn("Save", () => handlers.save()),
-    btn("Save As", () => {
-      const name = nameInput.value.trim();
-      if (name) handlers.saveAs(name);
-    }),
+    // Save writes to whatever is in the Name field — creating a new preset or
+    // overwriting an existing one of that name. The Name box is the single
+    // source of truth for "what am I saving as".
+    btn("Save", () => handlers.save(nameInput.value.trim())),
     btn("Duplicate", () => handlers.duplicate()),
     btn("Delete", () => handlers.deletePreset()),
     btn("Lock", () => handlers.lock()),
