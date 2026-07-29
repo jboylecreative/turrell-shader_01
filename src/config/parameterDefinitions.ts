@@ -60,6 +60,7 @@ interface BevParamTemplate {
   td: string;
   description: string;
   future?: boolean;
+  options?: { value: string; label: string }[];
 }
 
 // Per-beverage params map to un-prefixed uniform arrays indexed by beverage id
@@ -69,6 +70,26 @@ const BEV_COLOR_TEMPLATES: BevParamTemplate[] = [
   { key: "colors.secondary", label: "Secondary", type: "color", uniformSuffix: "BevSecondary", td: "Custom RGBA par {Bev}Secondary", description: "Secondary field colour (sRGB)." },
   { key: "colors.highlight", label: "Highlight", type: "color", uniformSuffix: "BevHighlight", td: "Custom RGBA par {Bev}Highlight", description: "Luminous highlight colour (sRGB)." },
   { key: "colors.shadow", label: "Shadow", type: "color", uniformSuffix: "BevShadow", td: "Custom RGBA par {Bev}Shadow", description: "Deep shadow colour (sRGB)." },
+];
+
+// STRUCTURE — the selectable archetypal shape layered on the flow field.
+// Option order MUST match STRUCTURE_TYPES / the shader ST_* constants.
+const BEV_STRUCTURE_TEMPLATES: BevParamTemplate[] = [
+  { key: "structure.structureType", label: "Type", type: "select", uniformSuffix: "StructureType", td: "CHOP {Bev}StructureType", description: "The archetypal shape layered on the flow field.", options: [
+    { value: "field", label: "Field" },
+    { value: "gradient", label: "Gradient" },
+    { value: "orb", label: "Orb" },
+    { value: "core", label: "Core" },
+    { value: "shelf", label: "Shelf" },
+    { value: "rings", label: "Rings" },
+    { value: "vortex", label: "Vortex" },
+    { value: "wave", label: "Wave" },
+    { value: "columns", label: "Columns" },
+  ] },
+  { key: "structure.pos", label: "Position", type: "float", min: 0, max: 1, uniformSuffix: "StructPos", td: "CHOP {Bev}StructPos", description: "Structure position / centre." },
+  { key: "structure.size", label: "Size", type: "float", min: 0.05, max: 1.5, uniformSuffix: "StructSize", td: "CHOP {Bev}StructSize", description: "Structure size — orb/core radius, ring/wave/column frequency, shelf width." },
+  { key: "structure.angle", label: "Angle", type: "float", min: 0, max: 360, uniformSuffix: "StructAngle", td: "CHOP {Bev}StructAngle", description: "Direction (deg) for gradient / wave / columns." },
+  { key: "structure.sharpness", label: "Sharpness", type: "float", min: 0, max: 1, uniformSuffix: "StructSharpness", td: "CHOP {Bev}StructSharpness", description: "Soft ↔ crisp edges." },
 ];
 
 // FORM — the "nature of the form" controls. Wide ranges for dramatic reshaping.
@@ -129,6 +150,7 @@ function expandBeverageParams(id: BeverageId, templates: BevParamTemplate[]): Pa
     td: t.td.replace("{Bev}", Bev),
     description: t.description,
     future: t.future,
+    options: t.options,
   }));
 }
 
@@ -139,6 +161,7 @@ export function beverageSections(): ControlSection[] {
     title: capitalise(id),
     params: [
       ...expandBeverageParams(id, BEV_COLOR_TEMPLATES),
+      ...expandBeverageParams(id, BEV_STRUCTURE_TEMPLATES),
       ...expandBeverageParams(id, BEV_FORM_TEMPLATES),
       ...expandBeverageParams(id, BEV_DEPTH_TEMPLATES),
       ...expandBeverageParams(id, BEV_MOTION_TEMPLATES),

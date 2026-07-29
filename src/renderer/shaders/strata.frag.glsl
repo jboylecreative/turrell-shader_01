@@ -11,14 +11,10 @@
 // -----------------------------------------------------------------------------
 precision highp float;
 
-// Portable core + beverage modules (each guarded against double-include).
+// Portable core + the single generic beverage evaluator (guarded includes).
 #include "./core/visualCore.glsl"
 #include "./core/params.glsl"
-#include "./beverages/americano.glsl"
-#include "./beverages/matcha.glsl"
-#include "./beverages/latte.glsl"
-#include "./beverages/espresso.glsl"
-#include "./beverages/coldBrew.glsl"
+#include "./beverages/beverage.glsl"
 
 in vec2 vUv;
 out vec4 fragColor;
@@ -39,17 +35,6 @@ uniform float uStrataAge[MAX_STRATA];
 uniform float uStrataTop[MAX_STRATA];
 uniform float uStrataBottom[MAX_STRATA];
 uniform float uStrataActivation[MAX_STRATA];
-
-// Dispatch to the correct beverage identity function.
-BeverageSample evaluateBeverage(int t, vec2 uv, float ly, float bandH, float age, float seed, float drift, float turb) {
-  BeverageParams p = fetchParams(t);
-  BeverageColors c = fetchColors(t);
-  if (t == 0) return evaluateAmericano(uv, ly, bandH, age, seed, drift, turb, p, c);
-  if (t == 1) return evaluateMatcha(uv, ly, bandH, age, seed, drift, turb, p, c);
-  if (t == 2) return evaluateLatte(uv, ly, bandH, age, seed, drift, turb, p, c);
-  if (t == 3) return evaluateEspresso(uv, ly, bandH, age, seed, drift, turb, p, c);
-  return evaluateColdBrew(uv, ly, bandH, age, seed, drift, turb, p, c);
-}
 
 void main() {
   float y = vUv.y;

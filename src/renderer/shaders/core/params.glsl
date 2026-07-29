@@ -12,6 +12,7 @@
 #define CORE_PARAMS_GLSL
 
 #include "./form.glsl"
+#include "./structures.glsl"
 
 #define BEV_COUNT 5
 
@@ -19,6 +20,8 @@
 // Motion fields drive each beverage's animation.
 struct BeverageParams {
   FormParams form;
+  int structureType;
+  StructureParams structure;
   float luminance;
   float glow;
   float variation;
@@ -48,6 +51,13 @@ uniform float uLuminance[BEV_COUNT];
 uniform float uGlow[BEV_COUNT];
 uniform float uVariation[BEV_COUNT];
 
+// Structure.
+uniform int   uStructureType[BEV_COUNT];
+uniform float uStructPos[BEV_COUNT];
+uniform float uStructSize[BEV_COUNT];
+uniform float uStructAngle[BEV_COUNT];
+uniform float uStructSharpness[BEV_COUNT];
+
 // Depth.
 uniform float uTurbidity[BEV_COUNT];
 uniform float uParallax[BEV_COUNT];
@@ -76,6 +86,11 @@ BeverageParams fetchParams(int t) {
   p.form.ridginess = uRidginess[i];
   p.form.stretch = uStretch[i];
   p.form.definition = uDefinition[i];
+  p.structureType = uStructureType[i];
+  p.structure.pos = uStructPos[i];
+  p.structure.size = uStructSize[i];
+  p.structure.angle = uStructAngle[i];
+  p.structure.sharpness = uStructSharpness[i];
   p.luminance = uLuminance[i];
   p.glow = uGlow[i];
   p.variation = uVariation[i];

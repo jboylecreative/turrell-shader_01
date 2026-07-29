@@ -17,6 +17,7 @@ export interface BeverageHandlers {
 
 const GROUP_ORDER: { key: string; label: string }[] = [
   { key: "colors", label: "Colors" },
+  { key: "structure", label: "Structure" },
   { key: "form", label: "Form" },
   { key: "depth", label: "Depth" },
   { key: "motion", label: "Motion" },

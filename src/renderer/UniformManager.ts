@@ -33,6 +33,10 @@ export class UniformManager {
   private scalarBindings: { path: string; uniform: string }[] = [];
   /** Per-beverage float params grouped into arrays: uniform → 5 jsonPaths. */
   private bevArrayBindings: { uniform: string; paths: string[] }[] = [];
+  /** Global select params → int uniform (value = index of selected option). */
+  private selectBindings: { path: string; uniform: string; options: string[] }[] = [];
+  /** Per-beverage select params → int array (index of selected option). */
+  private bevSelectBindings: { uniform: string; paths: string[]; options: string[] }[] = [];
 
   constructor() {
     // Special (non-parameter) uniforms used by the pipeline.
@@ -64,14 +68,27 @@ export class UniformManager {
     // with "beverages.") become arrays indexed by beverage; everything else is a
     // plain scalar/bool. Colours are handled by syncBeverageColors.
     const bevGroups = new Map<string, string[]>();
+    const bevSelectGroups = new Map<string, { paths: string[]; options: string[] }>();
     for (const p of allParameters()) {
       if (!p.uniform) continue;
 
       if (p.jsonPath.startsWith("beverages.")) {
-        if (p.type !== "float" && p.type !== "int") continue; // colours: separate
         const id = p.jsonPath.split(".")[1] as (typeof BEVERAGE_IDS)[number];
         const idx = BEVERAGE_IDS.indexOf(id);
         if (idx < 0) continue;
+        if (p.type === "select") {
+          // Per-beverage select → int array (index of selected option).
+          if (!bevSelectGroups.has(p.uniform)) {
+            this.uniforms[p.uniform] = { value: new Int32Array(NBEV) };
+            bevSelectGroups.set(p.uniform, {
+              paths: new Array(NBEV).fill(""),
+              options: (p.options ?? []).map((o) => o.value),
+            });
+          }
+          bevSelectGroups.get(p.uniform)!.paths[idx] = p.jsonPath;
+          continue;
+        }
+        if (p.type !== "float" && p.type !== "int") continue; // colours: separate
         if (!bevGroups.has(p.uniform)) {
           this.uniforms[p.uniform] = { value: new Float32Array(NBEV) };
           bevGroups.set(p.uniform, new Array(NBEV).fill(""));
@@ -86,27 +103,51 @@ export class UniformManager {
       } else if (p.type === "bool") {
         this.uniforms[p.uniform] ??= { value: false };
         this.scalarBindings.push({ path: p.jsonPath, uniform: p.uniform });
+      } else if (p.type === "select") {
+        // Global select → int uniform (index of selected option).
+        this.uniforms[p.uniform] ??= { value: 0 };
+        this.selectBindings.push({
+          path: p.jsonPath,
+          uniform: p.uniform,
+          options: (p.options ?? []).map((o) => o.value),
+        });
       }
     }
     this.bevArrayBindings = [...bevGroups.entries()].map(([uniform, paths]) => ({
       uniform,
       paths,
     }));
+    this.bevSelectBindings = [...bevSelectGroups.entries()].map(([uniform, g]) => ({
+      uniform,
+      paths: g.paths,
+      options: g.options,
+    }));
   }
 
-  /** Push all scalar/bool parameter values from state into their uniforms. */
+  /** Push all scalar/bool/select parameter values from state into their uniforms. */
   sync(state: PresetState): void {
     for (const b of this.scalarBindings) {
       this.uniforms[b.uniform].value = getByPath(state, b.path);
     }
+    for (const b of this.selectBindings) {
+      const idx = b.options.indexOf(String(getByPath(state, b.path)));
+      this.uniforms[b.uniform].value = idx < 0 ? 0 : idx;
+    }
   }
 
-  /** Push per-beverage float params into their arrays (indexed by beverage). */
+  /** Push per-beverage float + select params into their arrays (by beverage). */
   syncBeverageParams(state: PresetState): void {
     for (const b of this.bevArrayBindings) {
       const arr = this.uniforms[b.uniform].value as Float32Array;
       for (let i = 0; i < b.paths.length; i++) {
         arr[i] = Number(getByPath(state, b.paths[i]));
+      }
+    }
+    for (const b of this.bevSelectBindings) {
+      const arr = this.uniforms[b.uniform].value as Int32Array;
+      for (let i = 0; i < b.paths.length; i++) {
+        const idx = b.options.indexOf(String(getByPath(state, b.paths[i])));
+        arr[i] = idx < 0 ? 0 : idx;
       }
     }
   }

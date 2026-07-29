@@ -140,6 +140,30 @@ export interface BeverageForm {
   variation: number;  // per-order distinctness (0 identical .. 1 quite varied)
 }
 
+/** Structure type IDs, in the order the shader's ST_* constants expect
+ *  (uStructureType = index into this list). */
+export const STRUCTURE_TYPES = [
+  "field",
+  "gradient",
+  "orb",
+  "core",
+  "shelf",
+  "rings",
+  "vortex",
+  "wave",
+  "columns",
+] as const;
+export type StructureType = (typeof STRUCTURE_TYPES)[number];
+
+/** The selectable structural "shape" layered on the flow field. */
+export interface BeverageStructure {
+  structureType: StructureType;
+  pos: number;       // position / centre (0..1)
+  size: number;      // size / ring-spacing / wave-freq / column-count
+  angle: number;     // direction (deg) for gradient / wave / columns
+  sharpness: number; // soft <-> crisp
+}
+
 /** Sense of depth beneath the surface. */
 export interface BeverageDepth {
   turbidity: number;  // surface opacity: 1 opaque .. 0 see deep through gaps
@@ -170,6 +194,7 @@ export interface BeverageDefinition {
   label: string;
   colors: BeverageColors;
   form: BeverageForm;
+  structure: BeverageStructure;
   depth: BeverageDepth;
   motion: BeverageMotion;
   active: BeverageActive;
