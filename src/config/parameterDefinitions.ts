@@ -178,6 +178,9 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
     title: "Global Composition",
     open: true,
     params: [
+      { jsonPath: "global.compositeMode", label: "Compositing", type: "select", uniform: "uCompositeMode", td: "Par CompositeMode", description: "How overlapping strata combine: Blend (averaged) or Layered (stacked translucent sheets that occlude, with soft seam shadows).", options: [{ value: "blend", label: "Blend" }, { value: "layered", label: "Layered" }] },
+      { jsonPath: "global.layerShadow", label: "Layer Shadow", type: "float", min: 0, max: 1, uniform: "uLayerShadow", td: "CHOP LayerShadow", description: "Layered mode only: strength of the soft drop-shadows at the seams." },
+      { jsonPath: "global.layerShadowSize", label: "Layer Shadow Size", type: "float", min: 0, max: 0.2, uniform: "uLayerShadowSize", td: "CHOP LayerShadowSize", description: "Layered mode only: how far the seam shadow reaches." },
       { jsonPath: "global.timeScale", label: "Overall Time Scale", type: "float", min: 0, max: 1, uniform: "uTimeScale", td: "CHOP TimeScale", description: "Master multiplier on animation time." },
       { jsonPath: "global.exposure", label: "Exposure", type: "float", min: 0, max: 2, uniform: "uExposure", td: "CHOP Exposure", description: "Linear exposure applied before display conversion." },
       { jsonPath: "global.saturation", label: "Saturation", type: "float", min: 0, max: 2, uniform: "uSaturation", td: "CHOP Saturation", description: "Final saturation." },

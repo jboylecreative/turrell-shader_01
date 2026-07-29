@@ -56,7 +56,12 @@ export interface HistorySettings {
   randomizeInitialCount: boolean;
 }
 
+export type CompositeMode = "blend" | "layered";
+
 export interface GlobalSettings {
+  compositeMode: CompositeMode;
+  layerShadow: number;
+  layerShadowSize: number;
   timeScale: number;
   exposure: number;
   saturation: number;

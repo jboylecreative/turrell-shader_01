@@ -92,6 +92,9 @@ export function createDefaultPreset(): PresetState {
       randomizeInitialCount: false,
     },
     global: {
+      compositeMode: "blend",
+      layerShadow: 0.5,
+      layerShadowSize: 0.04,
       timeScale: 0.16,
       exposure: 1.0,
       saturation: 1.0,
