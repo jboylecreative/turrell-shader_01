@@ -206,6 +206,9 @@ export class Renderer {
       this.uniforms.setResolution(w, h);
       this.internalW = w;
       this.internalH = h;
+      // Re-fit the CSS letterbox so a changed composition aspect displays
+      // correctly straight away (otherwise it waits for the next window resize).
+      this.resize();
     }
   }
 

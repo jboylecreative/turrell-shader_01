@@ -213,6 +213,8 @@ html, body {
   border: 1px solid var(--line);
   border-radius: 4px;
 }
+/* Standalone number field (no slider beside it), e.g. output resolution. */
+.ctl-num-solo { width: 76px; }
 
 .ctl-toggle { grid-template-columns: 120px auto; }
 .ctl-toggle input { accent-color: var(--accent); }

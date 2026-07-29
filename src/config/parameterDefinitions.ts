@@ -14,7 +14,7 @@
 
 import { BEVERAGE_IDS, type BeverageId } from "../app/types";
 
-export type ParamType = "float" | "int" | "bool" | "color" | "select";
+export type ParamType = "float" | "int" | "bool" | "color" | "select" | "number";
 
 export interface ParameterDef {
   /** Dot-path into PresetState, e.g. "global.timeScale". */
@@ -181,6 +181,15 @@ export function beverageSections(): ControlSection[] {
 // ---- Global / shared sections (B–H) -----------------------------------------
 
 export const GLOBAL_SECTIONS: ControlSection[] = [
+  {
+    id: "output",
+    title: "Output Resolution",
+    open: true,
+    params: [
+      { jsonPath: "resolution.width", label: "Width", type: "number", min: 64, max: 15360, uniform: "", td: "Par ResWidth", description: "Composition render width in pixels (the internal framebuffer). Independent of Preview Quality and of the on-screen letterbox size." },
+      { jsonPath: "resolution.height", label: "Height", type: "number", min: 64, max: 15360, uniform: "", td: "Par ResHeight", description: "Composition render height in pixels (the internal framebuffer). Independent of Preview Quality and of the on-screen letterbox size." },
+    ],
+  },
   {
     id: "global",
     title: "Global Composition",

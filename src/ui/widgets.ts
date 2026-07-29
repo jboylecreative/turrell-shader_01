@@ -25,6 +25,8 @@ export function buildControl(param: ParameterDef, state: AppState): Widget {
       return buildColor(param, state);
     case "select":
       return buildSelect(param, state);
+    case "number":
+      return buildNumber(param, state);
     case "int":
     case "float":
     default:
@@ -99,6 +101,33 @@ function buildSlider(param: ParameterDef, state: AppState): Widget {
       num.disabled = d;
     },
   };
+}
+
+// A plain integer/number field with no slider track. Commits on `change`
+// (blur / Enter) rather than every keystroke — used for things like the output
+// resolution where each edit reallocates render buffers and mid-type values
+// (e.g. "38" of "3840") would be wasteful and visibly wrong.
+function buildNumber(param: ParameterDef, state: AppState): Widget {
+  const num = document.createElement("input");
+  num.type = "number";
+  num.className = "ctl-num ctl-num-solo";
+  if (param.min !== undefined) num.min = String(param.min);
+  if (param.max !== undefined) num.max = String(param.max);
+  num.step = String(param.step ?? 1);
+
+  const read = () => Number(state.get(param.jsonPath));
+  const refresh = () => (num.value = String(Math.round(read())));
+  num.addEventListener("change", () => {
+    let v = Number(num.value);
+    if (!Number.isFinite(v)) return refresh();
+    if (param.min !== undefined) v = Math.max(param.min, v);
+    if (param.max !== undefined) v = Math.min(param.max, v);
+    state.set(param.jsonPath, Math.round(v));
+    refresh();
+  });
+  refresh();
+  const root = row(param.label, num, param.description);
+  return { root, refresh, setDisabled: (d) => (num.disabled = d) };
 }
 
 function buildToggle(param: ParameterDef, state: AppState): Widget {
