@@ -27,6 +27,7 @@ uniform float uDriftTurbulence; // how much the drift churns/swirls
 uniform int   uCompositeMode;   // 0 = Blend (average), 1 = Layered (z-space)
 uniform float uLayerShadow;     // Layered: seam drop-shadow strength
 uniform float uLayerShadowSize; // Layered: shadow offset/softness
+uniform int   uLayoutMode;      // 0 = rolling, 1 = proportional, 2 = radial
 
 // Fixed-size strata arrays (compile-time max, mirrors MAX_STRATA_PLUS_EXIT = 21).
 const int MAX_STRATA = 21;
@@ -46,7 +47,12 @@ float bandCoverage(float y, float top, float bot, float soft) {
 }
 
 void main() {
+  // The band coordinate is vertical for rolling/proportional, and RADIAL distance
+  // from centre for radial mode — so the same band logic draws concentric rings.
   float y = vUv.y;
+  if (uLayoutMode == 2) {
+    y = length((vUv - 0.5) * vec2(uAspect, 1.0)) / (0.5 * length(vec2(uAspect, 1.0)));
+  }
   float soft = max(uBoundarySoftness, 0.002);
 
   // Shared left-to-right flow (on the flow clock, so it stays visible even when
