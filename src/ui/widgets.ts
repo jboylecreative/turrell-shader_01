@@ -56,32 +56,29 @@ function buildSlider(param: ParameterDef, state: AppState): Widget {
   const min = param.min ?? 0;
   const max = param.max ?? 1; // default "hard stop" of the slider track
   const step = param.step ?? (isInt ? 1 : (max - min) / 200 || 0.001);
-  // The slider track keeps the default range as its normal working zone; the
-  // number field can go beyond `max` for extra headroom, and the track's max
-  // extends to fit so the thumb stays meaningful.
+  // The slider track ALWAYS keeps its default range (fixed hard stops for fine
+  // dragging). The number field is unconstrained — type any value, above the max
+  // or below the min, to affect the visuals without changing the track. When the
+  // value is out of the track's range, the thumb simply pins at the nearest end.
   range.min = String(min);
   range.max = String(max);
   range.step = String(step);
-  num.min = String(min);
-  num.step = String(step);
   wrap.append(range, num);
 
   const read = () => Number(state.get(param.jsonPath));
-  // Slider drag: clamped to the current track range.
+  // Slider drag stays within the default track range.
   const writeFromRange = (v: number) => {
     state.set(param.jsonPath, isInt ? Math.round(v) : v);
   };
-  // Number field: floored at min, but NOT capped at max (extend the track).
+  // Number field: no clamping (beyond the slider range is allowed, both ways).
   const writeFromNum = (v: number) => {
-    let c = Math.max(min, isInt ? Math.round(v) : v);
-    if (c > Number(range.max)) range.max = String(c);
-    state.set(param.jsonPath, c);
+    if (!Number.isFinite(v)) return;
+    state.set(param.jsonPath, isInt ? Math.round(v) : v);
   };
   const refresh = () => {
     const v = read();
-    if (v > Number(range.max)) range.max = String(v); // fit extended values
-    range.value = String(v);
-    num.value = String(isInt ? Math.round(v) : round(v, 4));
+    range.value = String(v); // the range input auto-clamps its thumb for display
+    num.value = String(isInt ? Math.round(v) : round(v, 4)); // shows the true value
   };
   range.addEventListener("input", () => {
     writeFromRange(Number(range.value));
