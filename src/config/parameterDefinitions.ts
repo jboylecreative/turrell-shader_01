@@ -80,6 +80,7 @@ const BEV_FORM_TEMPLATES: BevParamTemplate[] = [
   { key: "form.stretch", label: "Stretch", type: "float", min: 0, max: 1, uniformSuffix: "Stretch", td: "CHOP {Bev}Stretch", description: "0 vertical streaks .. 0.5 round .. 1 horizontal streaks." },
   { key: "form.definition", label: "Definition", type: "float", min: 0, max: 1.5, uniformSuffix: "Definition", td: "CHOP {Bev}Definition", description: "Soft mist -> hard-edged defined masses." },
   { key: "form.luminance", label: "Luminance", type: "float", min: 0, max: 1.5, uniformSuffix: "Luminance", td: "CHOP {Bev}Luminance", description: "Overall brightness of the field." },
+  { key: "form.glow", label: "Glow", type: "float", min: 0, max: 2.5, uniformSuffix: "Glow", td: "CHOP {Bev}Glow", description: "How much this beverage's bright parts emit light (bloomed by the global Glow). Follows the structure — highlights, cores, bubble rims, ice edges glow most." },
   { key: "form.variation", label: "Variation", type: "float", min: 0, max: 1, uniformSuffix: "Variation", td: "CHOP {Bev}Variation", description: "Per-order distinctness: 0 = repeat orders look identical, 1 = each order varies (scale/orientation/brightness) while keeping identity." },
 ];
 
@@ -175,7 +176,8 @@ export const GLOBAL_SECTIONS: ControlSection[] = [
       { jsonPath: "global.sharedFlowSpeed", label: "Shared Flow Speed", type: "float", min: 0, max: 2, uniform: "uSharedFlowSpeed", td: "CHOP SharedFlowSpeed", description: "Rate of the shared flow field.", future: true },
       { jsonPath: "global.sharedDisplacement", label: "Shared Displacement", type: "float", min: 0, max: 0.3, uniform: "uSharedDisplacement", td: "CHOP SharedDisplacement", description: "Pass-2 whole-image displacement amount.", future: true },
       { jsonPath: "global.grainAmount", label: "Grain Amount", type: "float", min: 0, max: 0.3, uniform: "uGrainAmount", td: "CHOP GrainAmount", description: "Fine output grain." },
-      { jsonPath: "global.bloomAmount", label: "Bloom Amount", type: "float", min: 0, max: 1, uniform: "uBloomAmount", td: "CHOP BloomAmount", description: "Luminous bloom/spread amount.", future: true },
+      { jsonPath: "global.bloomAmount", label: "Glow Amount", type: "float", min: 0, max: 2, uniform: "uBloomAmount", td: "CHOP BloomAmount", description: "Overall strength of the luminous glow/bloom (scales every beverage's emission)." },
+      { jsonPath: "global.bloomRadius", label: "Glow Radius", type: "float", min: 0, max: 1, uniform: "uBloomRadius", td: "CHOP BloomRadius", description: "How far the glow spreads/halos out from the emissive parts." },
       { jsonPath: "global.previewQuality", label: "Preview Quality", type: "float", min: 0.25, max: 1, step: 0.05, uniform: "", td: "Res TOP scale", description: "Render-scale for preview; does not change coordinates." },
       { jsonPath: "global.pause", label: "Pause Animation", type: "bool", uniform: "uPaused", td: "CHOP Paused", description: "Freeze all animation." },
     ],

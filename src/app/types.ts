@@ -70,6 +70,7 @@ export interface GlobalSettings {
   sharedDisplacement: number;
   grainAmount: number;
   bloomAmount: number;
+  bloomRadius: number;
   previewQuality: number; // 0.25 .. 1.0 render-scale
   pause: boolean;
 }
@@ -135,6 +136,7 @@ export interface BeverageForm {
   stretch: number;    // 0 vertical streaks .. 0.5 round .. 1 horizontal streaks
   definition: number; // soft mist -> hard-edged masses
   luminance: number;  // overall brightness
+  glow: number;       // how much this beverage's bright parts emit light (bloom)
   variation: number;  // per-order distinctness (0 identical .. 1 quite varied)
 }
 

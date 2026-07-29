@@ -26,6 +26,8 @@ uniform float uExposure;
 uniform float uSaturation;
 uniform float uContrast;
 uniform float uGrainAmount;
+uniform float uBloomAmount;   // overall glow strength
+uniform float uBloomRadius;   // glow spread
 uniform bool  uDebugMonochrome;
 
 // Cheap hash for grain (portable; matches a TD noise TOP conceptually).
@@ -35,8 +37,36 @@ float hash21(vec2 p) {
   return fract(p.x * p.y);
 }
 
+// Emission-weighted bloom: gather colour * emission (alpha) around this pixel in
+// a spiral kernel so the luminous, structure-following parts halo outward.
+// Browser bloom pass -> TouchDesigner Bloom TOP / custom GLSL TOP.
+vec3 emissionBloom(vec2 uv, float radiusUV) {
+  if (uBloomAmount <= 0.0001 || radiusUV <= 0.0) return vec3(0.0);
+  const int TAPS = 24;
+  const float GA = 2.399963; // golden angle
+  vec3 sum = vec3(0.0);
+  float wsum = 0.0;
+  for (int i = 0; i < TAPS; i++) {
+    float fi = float(i);
+    float r = sqrt((fi + 0.5) / float(TAPS)) * radiusUV; // even areal spread
+    float a = fi * GA;
+    vec2 off = vec2(cos(a), sin(a)) * r;
+    off.y *= uResolution.x / uResolution.y; // keep the halo round
+    vec4 s = texture(uStrataTexture, uv + off);
+    float w = 1.0 - r / radiusUV;           // soft falloff toward the edge
+    sum += s.rgb * s.a * w;                  // colour weighted by emission
+    wsum += w;
+  }
+  return sum / max(wsum, 0.0001);
+}
+
 void main() {
-  vec3 col = texture(uStrataTexture, vUv).rgb;
+  vec4 src = texture(uStrataTexture, vUv);
+  vec3 col = src.rgb;
+
+  // Add the emission-driven glow (before the output treatment).
+  vec3 glow = emissionBloom(vUv, uBloomRadius * 0.06);
+  col += glow * uBloomAmount;
 
   // Output treatment in linear space.
   col *= uExposure;

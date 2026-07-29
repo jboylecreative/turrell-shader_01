@@ -21,6 +21,7 @@ struct BeverageSample {
   float density;      // apparent opacity/weight
   vec2 displacement;  // local flow, for interaction/cascade passes
   float edgeInfluence;// how strongly this stratum acts on its neighbours
+  float emission;     // per-pixel glow strength (bloomed in Pass 2)
 };
 
 #endif

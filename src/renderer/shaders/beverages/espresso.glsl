@@ -50,9 +50,13 @@ BeverageSample evaluateEspresso(vec2 uv, float ly, float bandH, float age, float
   col = mix(col, c.highlight, clamp(bub * 0.4 + incRim * 0.7 + incEdge * 0.55, 0.0, 1.0));
   col = mix(col, c.secondary, fac * 0.22);
   lum += (bub + incEdge) * 0.15;
+  // Emission (glow) follows the bright structure: highlights, cores, bubble
+  // rims and ice edges emit most. Bloomed in Pass 2.
+  float glowE = p.glow * (smoothstep(0.5, 1.05, lum) + incRim * 0.9 + incEdge * 0.7);
 
   BeverageSample s;
   s.color = col;
+  s.emission = glowE;
   s.luminance = lum;
   s.density = 0.9;
   s.displacement = vec2(0.0);

@@ -61,6 +61,7 @@ void main() {
   float turb = uDriftTurbulence;
 
   vec3 acc = vec3(0.0);
+  float emAcc = 0.0;
   float wsum = 0.0;
 
   for (int i = 0; i < MAX_STRATA; i++) {
@@ -79,12 +80,16 @@ void main() {
       uStrataType[i], vUv, ly, bandH, uStrataAge[i], uStrataSeed[i], drift, turb);
 
     acc += s.color * w;
+    emAcc += s.emission * w;
     wsum += w;
   }
 
   vec3 bg = vec3(uBackgroundLuminance);
   vec3 color = wsum > 0.0 ? acc / wsum : bg;
-  color = mix(bg, color, clamp(wsum, 0.0, 1.0));
+  float coverage = clamp(wsum, 0.0, 1.0);
+  color = mix(bg, color, coverage);
+  float emission = (wsum > 0.0 ? emAcc / wsum : 0.0) * coverage;
 
-  fragColor = vec4(color, 1.0);
+  // Emission travels to Pass 2 in the alpha channel for the bloom.
+  fragColor = vec4(color, emission);
 }
