@@ -68,23 +68,30 @@ export class PresetManager {
   /**
    * Add an imported preset to the library WITHOUT ever overwriting an existing
    * one. If a preset of the same name is already present:
-   *   - identical content  → left untouched (returns that name);
+   *   - identical content  → left untouched (`added: false`);
    *   - different content   → stored under a collision-safe "(imported)" name.
-   * Returns the name the preset now lives under.
+   * Returns the name the preset now lives under and whether it was newly added.
    */
-  addFromImport(snapshot: PresetState): string {
+  addFromImport(snapshot: PresetState): { name: string; added: boolean } {
     const desired = (snapshot.presetName || "Imported").trim() || "Imported";
     const existing = this.presets[desired];
     if (existing) {
-      if (samePresetContent(existing, snapshot)) return desired; // already present
+      if (samePresetContent(existing, snapshot)) {
+        return { name: desired, added: false }; // already present
+      }
       let name = `${desired} (imported)`;
       let i = 2;
       while (this.presets[name]) name = `${desired} (imported ${i++})`;
       this.save(name, snapshot);
-      return name;
+      return { name, added: true };
     }
     this.save(desired, snapshot);
-    return desired;
+    return { name: desired, added: true };
+  }
+
+  /** Every saved preset (deep-cloned), for bundle export. */
+  allPresets(): PresetState[] {
+    return Object.values(this.presets).map((p) => structuredClone(p));
   }
 
   duplicate(name: string): string | undefined {
@@ -205,9 +212,64 @@ function deepMerge<T>(base: T, override: Partial<T>): T {
   return out as T;
 }
 
-/** Trigger a browser download of the given JSON. */
-export function downloadJSON(state: PresetState, filename: string): void {
-  const blob = new Blob([toJSON(state)], { type: "application/json" });
+// ---- Multi-preset bundles ---------------------------------------------------
+
+const PRESET_BUNDLE_TYPE = "beverage-strata-preset-bundle";
+
+export interface PresetBundle {
+  type: typeof PRESET_BUNDLE_TYPE;
+  schemaVersion: number;
+  appVersion: string;
+  exportedAt: string;
+  presets: PresetState[];
+}
+
+/** Serialize a set of presets into a shareable multi-preset bundle string. */
+export function toBundleJSON(presets: PresetState[]): string {
+  const bundle: PresetBundle = {
+    type: PRESET_BUNDLE_TYPE,
+    schemaVersion: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    presets,
+  };
+  return JSON.stringify(bundle, null, 2);
+}
+
+function isBundle(parsed: unknown): parsed is PresetBundle {
+  return (
+    !!parsed &&
+    typeof parsed === "object" &&
+    (parsed as { type?: unknown }).type === PRESET_BUNDLE_TYPE &&
+    Array.isArray((parsed as { presets?: unknown }).presets)
+  );
+}
+
+/**
+ * Parse imported text into one or more presets. Accepts either a single-preset
+ * file (the working-state export) or a multi-preset bundle. Each preset is
+ * merged over the current defaults so older/partial files still load fully.
+ * Throws on invalid JSON or an empty bundle.
+ */
+export function parseImport(text: string): { presets: PresetState[]; bundle: boolean } {
+  const parsed = JSON.parse(text) as unknown;
+  if (isBundle(parsed)) {
+    if (parsed.schemaVersion > SCHEMA_VERSION) {
+      throw new Error(`Unsupported bundle schemaVersion ${parsed.schemaVersion}`);
+    }
+    const presets = parsed.presets
+      .filter((p) => p && typeof p === "object")
+      .map((p) => mergeOverDefaults(p as Partial<PresetState>));
+    if (presets.length === 0) throw new Error("Bundle contains no presets");
+    return { presets, bundle: true };
+  }
+  // Single preset — reuse the strict single-file validation.
+  return { presets: [fromJSON(text)], bundle: false };
+}
+
+/** Trigger a browser download of the given text as a file. */
+export function downloadText(text: string, filename: string): void {
+  const blob = new Blob([text], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -216,14 +278,17 @@ export function downloadJSON(state: PresetState, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+/** Trigger a browser download of the given JSON. */
+export function downloadJSON(state: PresetState, filename: string): void {
+  downloadText(toJSON(state), filename);
+}
+
 /**
- * Save via the native file picker when available, otherwise fall back to a
- * plain download. Support is not universal, so download must remain viable.
+ * Save arbitrary text via the native file picker when available, otherwise fall
+ * back to a plain download. Support is not universal, so download must remain
+ * viable.
  */
-export async function saveJSONWithPicker(
-  state: PresetState,
-  filename: string,
-): Promise<void> {
+export async function saveTextWithPicker(text: string, filename: string): Promise<void> {
   const picker = (
     window as unknown as {
       showSaveFilePicker?: (opts: unknown) => Promise<{
@@ -244,7 +309,7 @@ export async function saveJSONWithPicker(
         ],
       });
       const writable = await handle.createWritable();
-      await writable.write(toJSON(state));
+      await writable.write(text);
       await writable.close();
       return;
     } catch (err) {
@@ -252,5 +317,13 @@ export async function saveJSONWithPicker(
       // fall through to download on any other failure
     }
   }
-  downloadJSON(state, filename);
+  downloadText(text, filename);
+}
+
+/** Save a single preset via the native file picker (or download fallback). */
+export async function saveJSONWithPicker(
+  state: PresetState,
+  filename: string,
+): Promise<void> {
+  return saveTextWithPicker(toJSON(state), filename);
 }

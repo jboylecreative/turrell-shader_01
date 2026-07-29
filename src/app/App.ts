@@ -11,9 +11,11 @@ import { AppState } from "./AppState";
 import { StorageManager } from "./StorageManager";
 import {
   PresetManager,
-  fromJSON,
   mergeOverDefaults,
+  parseImport,
   saveJSONWithPicker,
+  saveTextWithPicker,
+  toBundleJSON,
   toJSON,
 } from "./PresetManager";
 import { createDefaultPreset } from "../config/defaults";
@@ -104,6 +106,7 @@ export class App {
         restoreFactoryDefault: () => this.restoreFactoryDefault(),
         importJSON: (f) => void this.importJSON(f),
         exportJSON: () => void this.exportJSON(),
+        exportAllPresets: () => void this.exportAllPresets(),
         copyJSON: () => void this.copyJSON(),
       },
       beverage: {
@@ -319,15 +322,34 @@ export class App {
   private async importJSON(file: File): Promise<void> {
     try {
       const text = await file.text();
-      const incoming = fromJSON(text);
+      const { presets, bundle } = parseImport(text);
+
+      if (bundle) {
+        // BUNDLE: merge every preset into the library (non-destructive). The
+        // working state is left as-is — nothing is loaded or overwritten.
+        let added = 0;
+        let present = 0;
+        for (const p of presets) {
+          if (this.presets.addFromImport(p).added) added++;
+          else present++;
+        }
+        this.panel.refreshPresets();
+        this.showError(
+          `Imported ${presets.length} presets: ${added} added` +
+            (present ? `, ${present} already present.` : "."),
+          true,
+        );
+        return;
+      }
+
+      // SINGLE preset:
       // 1) Timestamp-backup the current settings first, so an import can never
       //    silently discard whatever was loaded/being edited.
       const backupName = this.presets.backup(this.state.snapshot());
-      // 2) Add the imported preset to the saved library (non-destructive: it
-      //    never overwrites an existing preset, and a re-import is a no-op).
-      const importedName = this.presets.addFromImport(incoming);
+      // 2) Add it to the saved library (never overwrites; re-import is a no-op).
+      const { name: importedName } = this.presets.addFromImport(presets[0]);
       // Load the imported design as the working state.
-      this.state.replace(incoming);
+      this.state.replace(presets[0]);
       this.currentPresetName = importedName;
       this.state.set("presetName", importedName);
       this.panel.setLocked(this.presets.isLocked(importedName));
@@ -346,6 +368,17 @@ export class App {
     const snap = this.state.snapshot();
     const name = (snap.presetName || "preset").replace(/[^\w-]+/g, "_");
     await saveJSONWithPicker(snap, `${name}.json`);
+  }
+
+  /** Export every saved preset as one shareable bundle file. */
+  private async exportAllPresets(): Promise<void> {
+    const all = this.presets.allPresets();
+    if (all.length === 0) {
+      this.showError("No saved presets to export.", true);
+      return;
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    await saveTextWithPicker(toBundleJSON(all), `strata-presets-${stamp}.json`);
   }
 
   private async copyJSON(): Promise<void> {

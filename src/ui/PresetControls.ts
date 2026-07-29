@@ -19,6 +19,7 @@ export interface PresetHandlers {
   restoreFactoryDefault: () => void;
   importJSON: (file: File) => void;
   exportJSON: () => void;
+  exportAllPresets: () => void;
   copyJSON: () => void;
 }
 
@@ -57,6 +58,7 @@ export function buildPresetControls(handlers: PresetHandlers): PresetView {
     btn("Lock", () => handlers.lock()),
     btn("Unlock", () => handlers.unlock()),
     btn("Export JSON", () => handlers.exportJSON()),
+    btn("Export All", () => handlers.exportAllPresets()),
     btn("Copy JSON", () => handlers.copyJSON()),
     btn("Reset All to Default", () => handlers.resetEverything()),
     btn("Set All as Default", () => handlers.setCurrentAsDefault()),
