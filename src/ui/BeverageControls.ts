@@ -20,6 +20,7 @@ const GROUP_ORDER: { key: string; label: string }[] = [
   { key: "structure", label: "Structure" },
   { key: "form", label: "Form" },
   { key: "depth", label: "Depth" },
+  { key: "surface", label: "Surface" },
   { key: "motion", label: "Motion" },
   { key: "active", label: "Active" },
 ];

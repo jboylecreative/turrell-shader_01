@@ -15,6 +15,7 @@
 #include "../core/form.glsl"
 #include "../core/fields.glsl"
 #include "../core/structures.glsl"
+#include "../core/surface.glsl"
 
 // Generic palette: a luminance ramp shadow -> primary -> highlight, with the
 // secondary colour as a lower-mid accent.
@@ -53,6 +54,9 @@ BeverageSample evaluateBeverage(int bev, vec2 uv, float ly, float bandH, float a
 
   vec3 col = paletteMap(lum, c);
   col = mix(col, c.shadow, below * 0.35); // depths read darker/receding
+
+  // Surface / material treatments (sheen, iridescence, caustics).
+  applySurface(col, v, relief, lum, uv, st, p.sheen, p.iridescence, p.caustics, c.highlight);
 
   float glowE = p.glow * smoothstep(0.5, 1.05, lum);
 

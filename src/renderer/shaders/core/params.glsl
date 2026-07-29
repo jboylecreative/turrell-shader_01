@@ -28,6 +28,9 @@ struct BeverageParams {
   float turbidity;
   float parallax;
   float depthTint;
+  float sheen;
+  float iridescence;
+  float caustics;
   float speed;
   float flowStrength;
   float flowAngle;
@@ -63,6 +66,11 @@ uniform float uTurbidity[BEV_COUNT];
 uniform float uParallax[BEV_COUNT];
 uniform float uDepthTint[BEV_COUNT];
 
+// Surface / material.
+uniform float uSheen[BEV_COUNT];
+uniform float uIridescence[BEV_COUNT];
+uniform float uCaustics[BEV_COUNT];
+
 // Motion.
 uniform float uSpeed[BEV_COUNT];
 uniform float uFlowStrength[BEV_COUNT];
@@ -97,6 +105,9 @@ BeverageParams fetchParams(int t) {
   p.turbidity = uTurbidity[i];
   p.parallax = uParallax[i];
   p.depthTint = uDepthTint[i];
+  p.sheen = uSheen[i];
+  p.iridescence = uIridescence[i];
+  p.caustics = uCaustics[i];
   p.speed = uSpeed[i];
   p.flowStrength = uFlowStrength[i];
   p.flowAngle = uFlowAngle[i];

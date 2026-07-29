@@ -112,6 +112,13 @@ const BEV_DEPTH_TEMPLATES: BevParamTemplate[] = [
   { key: "depth.depthTint", label: "Depth Tint", type: "float", min: 0, max: 1, uniformSuffix: "DepthTint", td: "CHOP {Bev}DepthTint", description: "How much the deep layer darkens / recedes." },
 ];
 
+// SURFACE — material treatments applied to the colour.
+const BEV_SURFACE_TEMPLATES: BevParamTemplate[] = [
+  { key: "surface.sheen", label: "Sheen", type: "float", min: 0, max: 1, uniformSuffix: "Sheen", td: "CHOP {Bev}Sheen", description: "Metallic specular glints riding the ridges." },
+  { key: "surface.iridescence", label: "Iridescence", type: "float", min: 0, max: 1, uniformSuffix: "Iridescence", td: "CHOP {Bev}Iridescence", description: "Oil-slick hue shift across the surface." },
+  { key: "surface.caustics", label: "Caustics", type: "float", min: 0, max: 1, uniformSuffix: "Caustics", td: "CHOP {Bev}Caustics", description: "Faint animated bright light ripples." },
+];
+
 // MOTION — how the form moves.
 const BEV_MOTION_TEMPLATES: BevParamTemplate[] = [
   { key: "motion.speed", label: "Speed", type: "float", min: 0, max: 2, uniformSuffix: "Speed", td: "CHOP {Bev}Speed", description: "Internal churn/animation rate (twirls & curls). Not directional." },
@@ -164,6 +171,7 @@ export function beverageSections(): ControlSection[] {
       ...expandBeverageParams(id, BEV_STRUCTURE_TEMPLATES),
       ...expandBeverageParams(id, BEV_FORM_TEMPLATES),
       ...expandBeverageParams(id, BEV_DEPTH_TEMPLATES),
+      ...expandBeverageParams(id, BEV_SURFACE_TEMPLATES),
       ...expandBeverageParams(id, BEV_MOTION_TEMPLATES),
       ...expandBeverageParams(id, BEV_ACTIVE_TEMPLATES),
     ],

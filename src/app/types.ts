@@ -176,6 +176,13 @@ export interface BeverageDepth {
   depthTint: number;  // how much the deep layer darkens / recedes
 }
 
+/** Surface / material treatments. */
+export interface BeverageSurface {
+  sheen: number;       // metallic specular glints on ridges
+  iridescence: number; // oil-slick hue shift
+  caustics: number;    // animated bright light ripples
+}
+
 /** How the form moves. */
 export interface BeverageMotion {
   speed: number;       // internal churn/animation rate (not directional)
@@ -201,6 +208,7 @@ export interface BeverageDefinition {
   form: BeverageForm;
   structure: BeverageStructure;
   depth: BeverageDepth;
+  surface: BeverageSurface;
   motion: BeverageMotion;
   active: BeverageActive;
 }
