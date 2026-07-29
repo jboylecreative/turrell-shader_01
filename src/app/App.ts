@@ -22,7 +22,7 @@ import { ControlPanel } from "../ui/ControlPanel";
 import { buildDebugOverlay, type DebugOverlay } from "../ui/DebugControls";
 import { HistoryManager } from "./HistoryManager";
 import { EventQueue } from "./EventQueue";
-import type { BeverageId } from "./types";
+import type { BeverageId, PresetState } from "./types";
 
 export class App {
   private state: AppState;
@@ -104,9 +104,15 @@ export class App {
         lock: () => this.lockPreset(),
         unlock: () => this.unlockPreset(),
         resetEverything: () => this.resetEverything(),
+        setCurrentAsDefault: () => this.setCurrentAsDefault(),
+        restoreFactoryDefault: () => this.restoreFactoryDefault(),
         importJSON: (f) => void this.importJSON(f),
         exportJSON: () => void this.exportJSON(),
         copyJSON: () => void this.copyJSON(),
+      },
+      beverage: {
+        copyFrom: (src, dst) => this.copyBeverage(src, dst),
+        reset: (id) => this.resetBeverage(id),
       },
     });
 
@@ -257,13 +263,59 @@ export class App {
     this.panel.refreshPresets();
   }
 
+  /** The current default baseline: the user-saved default if any, else factory. */
+  private getDefaultState(): PresetState {
+    const ud = this.storage.loadUserDefault();
+    return ud ? mergeOverDefaults(ud) : createDefaultPreset();
+  }
+
   private resetEverything(): void {
+    const fresh = this.getDefaultState();
+    fresh.presetName = "Default";
+    this.state.replace(fresh);
+    this.currentPresetName = fresh.presetName;
+    this.panel.setLocked(false);
+    this.panel.refreshAll();
+    this.storage.saveWorkingNow(this.state.snapshot());
+  }
+
+  /** Save the current settings as the new default baseline (used by resets). */
+  private setCurrentAsDefault(): void {
+    this.storage.saveUserDefault(this.state.snapshot());
+    this.showError("Saved current settings as the new default.", true);
+  }
+
+  /** Discard the user default and return to the factory default. */
+  private restoreFactoryDefault(): void {
+    this.storage.clearUserDefault();
     const fresh = createDefaultPreset();
     this.state.replace(fresh);
     this.currentPresetName = fresh.presetName;
     this.panel.setLocked(false);
     this.panel.refreshAll();
     this.storage.saveWorkingNow(this.state.snapshot());
+  }
+
+  // ---- Per-beverage copy / reset --------------------------------------------
+
+  /** Copy all of one beverage's settings onto another (keeping the target's
+   *  label). The originals are never lost — Reset restores them from the
+   *  default baseline. */
+  private copyBeverage(src: BeverageId, dst: BeverageId): void {
+    if (src === dst) return;
+    const copy = structuredClone(this.state.raw.beverages[src]);
+    copy.label = this.state.raw.beverages[dst].label;
+    this.state.raw.beverages[dst] = copy;
+    this.state.markChanged();
+    this.panel.refreshAll();
+  }
+
+  /** Reset a single beverage to the current default baseline. */
+  private resetBeverage(id: BeverageId): void {
+    const def = this.getDefaultState().beverages[id];
+    this.state.raw.beverages[id] = structuredClone(def);
+    this.state.markChanged();
+    this.panel.refreshAll();
   }
 
   // ---- JSON I/O -------------------------------------------------------------

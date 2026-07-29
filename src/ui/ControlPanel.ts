@@ -9,13 +9,14 @@ import type { AppState } from "../app/AppState";
 import type { Widget } from "./widgets";
 import { buildBeverageButtons, type TriggerHandlers, type TriggerStatus, type TriggerView } from "./BeverageButtons";
 import { buildGlobalControls } from "./GlobalControls";
-import { buildBeverageControls } from "./BeverageControls";
+import { buildBeverageControls, type BeverageHandlers } from "./BeverageControls";
 import { buildPresetControls, type PresetHandlers, type PresetView } from "./PresetControls";
 import { makeSection } from "./section";
 
 export interface PanelHandlers {
   trigger: TriggerHandlers;
   preset: PresetHandlers;
+  beverage: BeverageHandlers;
 }
 
 export class ControlPanel {
@@ -50,7 +51,7 @@ export class ControlPanel {
     scroll.append(buildGlobalControls(state, this.widgets));
 
     // Section F: beverages.
-    scroll.append(buildBeverageControls(state, this.widgets));
+    scroll.append(buildBeverageControls(state, this.widgets, handlers.beverage));
   }
 
   /** Re-sync every widget from state (after preset load / JSON import). */

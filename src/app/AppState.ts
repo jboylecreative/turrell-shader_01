@@ -71,6 +71,12 @@ export class AppState {
     this.emit("*", 0);
   }
 
+  /** Notify listeners after a direct mutation of `raw` (e.g. copying a whole
+   *  beverage object). Widgets should refresh from state. */
+  markChanged(): void {
+    this.emit("*", 0);
+  }
+
   /** A serializable snapshot suitable for JSON / storage. */
   snapshot(): PresetState {
     return structuredClone(this.state);

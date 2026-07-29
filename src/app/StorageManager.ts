@@ -8,6 +8,7 @@ import { SCHEMA_VERSION, type PresetState } from "./types";
 
 const WORKING_KEY = "bssp.workingState.v1";
 const PRESETS_KEY = "bssp.presets.v1";
+const USER_DEFAULT_KEY = "bssp.userDefault.v1";
 const DEBOUNCE_MS = 400;
 
 export class StorageManager {
@@ -34,6 +35,24 @@ export class StorageManager {
       this.timer = null;
     }
     writeState(WORKING_KEY, state);
+  }
+
+  // ---- User-defined default baseline ----------------------------------------
+
+  loadUserDefault(): PresetState | null {
+    return readState(USER_DEFAULT_KEY);
+  }
+
+  saveUserDefault(state: PresetState): void {
+    writeState(USER_DEFAULT_KEY, state);
+  }
+
+  clearUserDefault(): void {
+    try {
+      localStorage.removeItem(USER_DEFAULT_KEY);
+    } catch {
+      /* ignore */
+    }
   }
 
   // ---- Named presets (stored as a map keyed by name) ------------------------
