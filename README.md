@@ -13,10 +13,7 @@ into **TouchDesigner** later with minimal rewriting (see [For developers](#for-d
 
 ## Contents
 
-- [Running it](#running-it)
-- [How a look is built](#how-a-look-is-built)
 - [Trigger Controls](#trigger-controls)
-- [Presets & Persistence](#presets--persistence)
 - [Output Resolution](#output-resolution)
 - [Global Composition](#global-composition)
 - [Strata Layout](#strata-layout)
@@ -25,38 +22,9 @@ into **TouchDesigner** later with minimal rewriting (see [For developers](#for-d
 - [Per-Beverage Controls](#per-beverage-controls)
 - [Common workflows](#common-workflows)
 - [For developers](#for-developers)
-
----
-
-## Running it
-
-- **Dev:** `npm install`, then `npm run dev` → opens at `http://localhost:5180`.
-- **Production build:** `npm run build` → static files in `dist/` (deployable to any static host, e.g. Vercel).
-- **Fullscreen:** press **`F`** (except while typing in a field).
-
-Your work autosaves to the browser continuously, so a reload restores where you left off.
-The app runs fully locally after `npm install`; no network access is required.
-
----
-
-## How a look is built
-
-Two things combine on screen:
-
-1. **The background** — a dim flat field (see *Background Luminance*).
-2. **Strata** — one horizontal band per recent order, stacked and drifting. Each band
-   is drawn from the ordered beverage's settings.
-
-A beverage's identity comes from three things, all editable and all copyable:
-
-- **A Structure Type** — the archetypal shape (orb, shelf, gradient, vortex…).
-- **Form / Depth / Surface / Motion parameters** — how that shape looks and moves.
-- **A palette** — its four colors.
-
-Because a beverage is "just data," you can copy one onto another, change any beverage
-to any shape, and every difference is exposed as a control (nothing is hardcoded).
-
-> **Do I need to reload after changing a control?** No — everything updates live.
+  - [Running it](#running-it)
+  - [How a look is built](#how-a-look-is-built)
+  - [Presets & Persistence](#presets--persistence)
 
 ---
 
@@ -70,49 +38,6 @@ At the top of the panel. Simulates orders coming in so you can see how the compo
 | **Queue / Active readout** | Shows how many orders are queued and which is currently animating in. |
 | **Clear History** | Empties the visible strata / resets the recent-order window everywhere. |
 | **Random History** | Fills the screen with a random set of orders — handy for seeing a busy composition instantly. |
-
----
-
-## Presets & Persistence
-
-A **preset** is a complete snapshot of every setting (global + all five beverages).
-Presets are stored in your browser and can be exported as JSON files to share.
-
-**Fields**
-
-- **Preset dropdown** — load a saved preset.
-- **Name** — the name to save under. This is the single source of truth for saving:
-  type a name here, then click **Save**.
-
-**Buttons**
-
-| Button | What it does |
-| --- | --- |
-| **Save** | Saves the current settings under the **Name** field — creates a new preset, or overwrites an existing one of that exact name. To fork, type a new name and Save (the original is untouched). |
-| **Duplicate** | Copies the current preset to `"<name> copy"`. |
-| **Delete** | Deletes the current preset (blocked if locked). |
-| **Lock / Unlock** | Locks a preset against being overwritten or deleted (shown with 🔒). |
-| **Export JSON** | Saves the **current** design as a single `.json` file (one preset). |
-| **Export All** | Saves **every** stored preset into one shareable **bundle** file. |
-| **Copy JSON** | Copies the current design to the clipboard as JSON. |
-| **Import JSON** | Loads a file. **Auto-detects** what it is (see below). |
-| **Reset All to Default** | Resets every setting to the current default baseline. |
-| **Set All as Default** | Makes the current settings the new default baseline (what "Reset" returns to). |
-| **Restore Factory (All)** | Discards your custom default and returns to the original factory settings. |
-
-**How Import behaves (non-destructive by design)**
-
-- **A single-preset file** → your current settings are first saved as a timestamped
-  backup preset (`"<name> (backup YYYY-MM-DD HH-MM-SS)"`), then the file loads as the
-  working state and is added to your library. Nothing you had can be lost.
-- **A bundle file (from Export All)** → every preset in it is merged into your library.
-  It **never overwrites** an existing preset: identical ones are skipped, and a name
-  clash with different content is saved as `"<name> (imported)"`. The banner reports
-  `"N added, M already present."` A bundle import does **not** change what's on screen.
-
-> **Collecting user submissions:** have users click **Export JSON** (their design) or
-> **Export All** (their whole library) and send you the file. You **Import JSON** it —
-> their presets appear in your dropdown with zero risk of clobbering yours.
 
 ---
 
@@ -358,3 +283,72 @@ the uniform binding, and the TD parameter map.
 **Colour pipeline:** hex fields are sRGB → converted to linear on the CPU
 (`ColorUtils.ts`) → all shader math is linear → a single sRGB conversion in the final
 pass (`core/color.glsl`). Never convert twice.
+
+### Running it
+
+- **Dev:** `npm install`, then `npm run dev` → opens at `http://localhost:5180`.
+- **Production build:** `npm run build` → static files in `dist/` (deployable to any static host, e.g. Vercel).
+- **Fullscreen:** press **`F`** (except while typing in a field).
+
+Your work autosaves to the browser continuously, so a reload restores where you left off.
+The app runs fully locally after `npm install`; no network access is required.
+
+### How a look is built
+
+Two things combine on screen:
+
+1. **The background** — a dim flat field (see *Background Luminance*).
+2. **Strata** — one horizontal band per recent order, stacked and drifting. Each band
+   is drawn from the ordered beverage's settings.
+
+A beverage's identity comes from three things, all editable and all copyable:
+
+- **A Structure Type** — the archetypal shape (orb, shelf, gradient, vortex…).
+- **Form / Depth / Surface / Motion parameters** — how that shape looks and moves.
+- **A palette** — its four colors.
+
+Because a beverage is "just data," you can copy one onto another, change any beverage
+to any shape, and every difference is exposed as a control (nothing is hardcoded).
+
+> **Do I need to reload after changing a control?** No — everything updates live.
+
+### Presets & Persistence
+
+A **preset** is a complete snapshot of every setting (global + all five beverages).
+Presets are stored in your browser and can be exported as JSON files to share.
+
+**Fields**
+
+- **Preset dropdown** — load a saved preset.
+- **Name** — the name to save under. This is the single source of truth for saving:
+  type a name here, then click **Save**.
+
+**Buttons**
+
+| Button | What it does |
+| --- | --- |
+| **Save** | Saves the current settings under the **Name** field — creates a new preset, or overwrites an existing one of that exact name. To fork, type a new name and Save (the original is untouched). |
+| **Duplicate** | Copies the current preset to `"<name> copy"`. |
+| **Delete** | Deletes the current preset (blocked if locked). |
+| **Lock / Unlock** | Locks a preset against being overwritten or deleted (shown with 🔒). |
+| **Export JSON** | Saves the **current** design as a single `.json` file (one preset). |
+| **Export All** | Saves **every** stored preset into one shareable **bundle** file. |
+| **Copy JSON** | Copies the current design to the clipboard as JSON. |
+| **Import JSON** | Loads a file. **Auto-detects** what it is (see below). |
+| **Reset All to Default** | Resets every setting to the current default baseline. |
+| **Set All as Default** | Makes the current settings the new default baseline (what "Reset" returns to). |
+| **Restore Factory (All)** | Discards your custom default and returns to the original factory settings. |
+
+**How Import behaves (non-destructive by design)**
+
+- **A single-preset file** → your current settings are first saved as a timestamped
+  backup preset (`"<name> (backup YYYY-MM-DD HH-MM-SS)"`), then the file loads as the
+  working state and is added to your library. Nothing you had can be lost.
+- **A bundle file (from Export All)** → every preset in it is merged into your library.
+  It **never overwrites** an existing preset: identical ones are skipped, and a name
+  clash with different content is saved as `"<name> (imported)"`. The banner reports
+  `"N added, M already present."` A bundle import does **not** change what's on screen.
+
+> **Collecting user submissions:** have users click **Export JSON** (their design) or
+> **Export All** (their whole library) and send you the file. You **Import JSON** it —
+> their presets appear in your dropdown with zero risk of clobbering yours.
