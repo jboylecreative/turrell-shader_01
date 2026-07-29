@@ -10,9 +10,6 @@ import type { AppState } from "../app/AppState";
 
 export interface TriggerHandlers {
   trigger: (id: BeverageId) => void;
-  undo: () => void;
-  skip: () => void;
-  clearQueue: () => void;
   clearHistory: () => void;
   generateRandomHistory: () => void;
 }
@@ -57,9 +54,6 @@ export function buildBeverageButtons(
   const actions = document.createElement("div");
   actions.className = "trigger-actions";
   actions.append(
-    actionBtn("Undo", handlers.undo),
-    actionBtn("Skip", handlers.skip),
-    actionBtn("Clear Queue", handlers.clearQueue),
     actionBtn("Clear History", handlers.clearHistory),
     actionBtn("Random History", handlers.generateRandomHistory),
   );

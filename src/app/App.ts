@@ -85,9 +85,6 @@ export class App {
     this.panel = new ControlPanel(this.panelMount, this.state, {
       trigger: {
         trigger: (id) => this.triggerBeverage(id),
-        undo: () => this.undoTrigger(),
-        skip: () => this.queue.skip(this.renderer.realTimeNow),
-        clearQueue: () => this.queue.clear(),
         clearHistory: () => this.history.clear(this.renderer.realTimeNow),
         generateRandomHistory: () =>
           this.history.generateRandom(this.state.raw.randomSeed, this.renderer.realTimeNow),
@@ -185,13 +182,6 @@ export class App {
     // Rolling mode also runs the queue/cascade + rolling stack.
     if (this.state.raw.global.layoutMode === "rolling") {
       this.queue.enqueue(id, this.renderer.realTimeNow);
-    }
-  }
-
-  private undoTrigger(): void {
-    // Prefer removing a not-yet-active queued press; else exit the newest order.
-    if (!this.queue.undoPending()) {
-      this.history.removeNewest(this.renderer.realTimeNow);
     }
   }
 
