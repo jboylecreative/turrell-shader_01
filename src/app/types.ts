@@ -57,8 +57,13 @@ export interface HistorySettings {
 }
 
 export type CompositeMode = "blend" | "layered";
+export type LayoutMode = "rolling" | "proportional" | "radial";
+export type RadialOrder = "fixed" | "byCount" | "newest";
 
 export interface GlobalSettings {
+  layoutMode: LayoutMode;
+  layoutWindow: number; // count-based modes: how many recent orders are tallied
+  radialOrder: RadialOrder;
   compositeMode: CompositeMode;
   layerShadow: number;
   layerShadowSize: number;

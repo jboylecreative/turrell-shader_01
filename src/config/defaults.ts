@@ -97,6 +97,9 @@ export function createDefaultPreset(): PresetState {
       randomizeInitialCount: false,
     },
     global: {
+      layoutMode: "rolling",
+      layoutWindow: 12,
+      radialOrder: "fixed",
       compositeMode: "blend",
       layerShadow: 0.5,
       layerShadowSize: 0.04,

@@ -138,7 +138,7 @@ export class App {
       const u = this.renderer.uniforms;
       u.syncBeverageColors(this.state.raw);
       u.syncBeverageParams(this.state.raw);
-      u.setStrata(this.history.strata, realTime);
+      u.setStrata(this.history.displayStrata, realTime);
 
       const res = this.renderer.renderResolution;
       this.overlay.update({
@@ -166,19 +166,26 @@ export class App {
     }
   }
 
-  /** DEV-ONLY: inspect the live strata for verification. */
-  debugStrata(): { count: number; states: string[]; types: string[] } {
+  /** DEV-ONLY: inspect the live displayed strata/regions for verification. */
+  debugStrata(): { count: number; states: string[]; types: string[]; tops: number[] } {
+    const d = this.history.displayStrata;
     return {
-      count: this.history.strata.length,
-      states: this.history.strata.map((s) => s.state),
-      types: this.history.strata.map((s) => s.beverageId),
+      count: d.length,
+      states: d.map((s) => s.state),
+      types: d.map((s) => s.beverageId),
+      tops: d.map((s) => Number(s.currentTop.toFixed(3))),
     };
   }
 
   // ---- Trigger / queue ------------------------------------------------------
 
   private triggerBeverage(id: BeverageId): void {
-    this.queue.enqueue(id, this.renderer.realTimeNow);
+    // The recent-orders window is fed in every mode (count-based modes read it).
+    this.history.recordOrder(id);
+    // Rolling mode also runs the queue/cascade + rolling stack.
+    if (this.state.raw.global.layoutMode === "rolling") {
+      this.queue.enqueue(id, this.renderer.realTimeNow);
+    }
   }
 
   private undoTrigger(): void {
