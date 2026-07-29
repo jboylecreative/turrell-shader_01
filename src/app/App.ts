@@ -319,13 +319,24 @@ export class App {
   private async importJSON(file: File): Promise<void> {
     try {
       const text = await file.text();
-      const state = fromJSON(text);
-      this.state.replace(state);
-      this.currentPresetName = state.presetName;
-      this.panel.setLocked(false);
+      const incoming = fromJSON(text);
+      // 1) Timestamp-backup the current settings first, so an import can never
+      //    silently discard whatever was loaded/being edited.
+      const backupName = this.presets.backup(this.state.snapshot());
+      // 2) Add the imported preset to the saved library (non-destructive: it
+      //    never overwrites an existing preset, and a re-import is a no-op).
+      const importedName = this.presets.addFromImport(incoming);
+      // Load the imported design as the working state.
+      this.state.replace(incoming);
+      this.currentPresetName = importedName;
+      this.state.set("presetName", importedName);
+      this.panel.setLocked(this.presets.isLocked(importedName));
       this.panel.refreshAll();
       this.storage.saveWorkingNow(this.state.snapshot());
-      this.clearError();
+      this.showError(
+        `Imported "${importedName}". Your previous settings were saved as "${backupName}".`,
+        true,
+      );
     } catch (err) {
       this.showError(`Import failed: ${(err as Error).message}`, true);
     }

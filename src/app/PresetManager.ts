@@ -50,6 +50,43 @@ export class PresetManager {
     this.persist();
   }
 
+  /**
+   * Save a timestamped backup copy of a snapshot so it can never be lost when
+   * the working state is about to be replaced (e.g. right before a JSON
+   * import). Returns the name it was stored under.
+   */
+  backup(snapshot: PresetState): string {
+    const base = (snapshot.presetName || "Working").trim() || "Working";
+    let name = `${base} (backup ${backupTimestamp()})`;
+    // Guard against a same-second collision from two rapid imports.
+    let i = 2;
+    while (this.presets[name]) name = `${base} (backup ${backupTimestamp()} ${i++})`;
+    this.save(name, snapshot);
+    return name;
+  }
+
+  /**
+   * Add an imported preset to the library WITHOUT ever overwriting an existing
+   * one. If a preset of the same name is already present:
+   *   - identical content  → left untouched (returns that name);
+   *   - different content   → stored under a collision-safe "(imported)" name.
+   * Returns the name the preset now lives under.
+   */
+  addFromImport(snapshot: PresetState): string {
+    const desired = (snapshot.presetName || "Imported").trim() || "Imported";
+    const existing = this.presets[desired];
+    if (existing) {
+      if (samePresetContent(existing, snapshot)) return desired; // already present
+      let name = `${desired} (imported)`;
+      let i = 2;
+      while (this.presets[name]) name = `${desired} (imported ${i++})`;
+      this.save(name, snapshot);
+      return name;
+    }
+    this.save(desired, snapshot);
+    return desired;
+  }
+
   duplicate(name: string): string | undefined {
     const src = this.presets[name];
     if (!src) return undefined;
@@ -78,6 +115,44 @@ export class PresetManager {
   private persist(): void {
     this.storage.savePresets(this.presets);
   }
+}
+
+// ---- Helpers ----------------------------------------------------------------
+
+/** Local timestamp as "YYYY-MM-DD HH-MM-SS" (filename/preset-name safe, sorts
+ *  chronologically within a shared prefix). */
+function backupTimestamp(d = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ` +
+    `${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`
+  );
+}
+
+/** True if two presets are the same design, ignoring volatile metadata (name,
+ *  save time, and version stamps) so a re-import of the same file is a no-op. */
+function samePresetContent(a: PresetState, b: PresetState): boolean {
+  const skip = new Set(["presetName", "savedAt", "appVersion", "schemaVersion"]);
+  return deepEqual(a, b, skip);
+}
+
+/** Order-independent deep equality. `skipTopKeys` (if given) omits those keys at
+ *  the top level only; nested values are compared in full. */
+function deepEqual(a: unknown, b: unknown, skipTopKeys?: Set<string>): boolean {
+  if (a === b) return true;
+  if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) {
+    return false;
+  }
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((v, i) => deepEqual(v, (b as unknown[])[i]));
+  }
+  const ao = a as Record<string, unknown>;
+  const bo = b as Record<string, unknown>;
+  const ak = Object.keys(ao).filter((k) => !skipTopKeys?.has(k));
+  const bk = Object.keys(bo).filter((k) => !skipTopKeys?.has(k));
+  if (ak.length !== bk.length) return false;
+  return ak.every((k) => k in bo && deepEqual(ao[k], bo[k]));
 }
 
 // ---- JSON import / export (module functions, no instance needed) ------------
